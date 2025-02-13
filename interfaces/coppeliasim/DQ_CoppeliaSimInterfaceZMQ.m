@@ -24,12 +24,36 @@
 %           https://github.com/dqrobotics/cpp-interface-coppeliasim-zmq/blob/main/src/dqrobotics/interfaces/coppeliasim/DQ_CoppeliaSimInterfaceZMQ.cpp
 
 classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
+
+    properties (Access=protected)
+        host_;
+        rpcPort_;
+        cntPort_;
+        verbose_;
+        MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_;
+    end
     
     methods (Access = protected)
-        function validate_input(~, input, class, msg)
+        function validate_input_(~, input, class, msg)
               if ~isa(input, class)
                   error(msg)
               end
+        end
+
+        function connect_(obj, host, rpcPort, MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION, cntPort, verbose)
+            try
+                obj.host_ = host;
+                obj.rpcPort_ = rpcPort;
+                obj.cntPort_ = cntPort;
+                obj.verbose_ = verbose;
+                obj.MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_ = MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION; 
+                
+                fut = parfeval(@zmq_wrapper.create_client, 4, host, rpcPort, cntPort, verbose); 
+                finished = wait(fut, 'finished', 1);    
+
+            catch ME
+                rethrow(ME)
+            end
         end
     end
     methods
@@ -40,29 +64,32 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function connect(obj, host, port, TIMEOUT_IN_MILISECONDS)
             % This method connects to the remote api server (i.e. CoppeliaSim).
             % Calling this function is required before anything else can happen.
-            if nargin == 1
-                host = "localhost";
-                port = "23000";
-                TIMEOUT_IN_MILISECONDS = 300;
+            switch nargin
+                case 1
+                    host = 'localhost';
+                    port = 23000;
+                    TIMEOUT_IN_MILISECONDS = 300;
+                case 2
+                    obj.validate_input_(host, 'string', 'The host argument must be a string. Example: "localhost", "192.168.120.1".');
+                    port = 23000;
+                    TIMEOUT_IN_MILISECONDS = 300;
+           
+                case 3
+                   obj.validate_input_(host, 'string', 'The host argument must be a string. Example: "localhost", "192.168.120.1".');
+                   obj.validate_input_(port, 'numeric', 'The port argument must be numeric. Example: 23000.');
+                    TIMEOUT_IN_MILISECONDS = 300;
+           
+
+                case 4
+                   obj.validate_input_(host, 'string', 'host must be a string. Example: "localhost", "192.168.120.1".');
+                   obj.validate_input_(port, 'numeric', 'port must be numeric. Example: 23000.');
+                   obj.validate_input_(TIMEOUT_IN_MILISECONDS, 'numeric', 'TIMEOUT_IN_MILISECONDS must be numeric. Example: 300.');
+
+                otherwise
+                  error('Wrong number of arguments');
             end
 
-           if nargin == 2
-                obj.validate_input(host, 'string', 'The host argument must be a string. Example: "localhost", "192.168.120.1".');
-                port = "23000";
-                TIMEOUT_IN_MILISECONDS = 300;
-           end
-
-           if nargin == 3
-               obj.validate_input(host, 'string', 'The host argument must be a string. Example: "localhost", "192.168.120.1".');
-               obj.validate_input(port, 'numeric', 'The port argument must be numeric. Example: 23000.');
-                TIMEOUT_IN_MILISECONDS = 300;
-           end
-
-           if nargin == 4
-               obj.validate_input(host, 'string', 'host must be a string. Example: "localhost", "192.168.120.1".');
-               obj.validate_input(port, 'numeric', 'port must be numeric. Example: 23000.');
-               obj.validate_input(TIMEOUT_IN_MILISECONDS, 'numeric', 'TIMEOUT_IN_MILISECONDS must be numeric. Example: 300.');
-           end
+           obj.connect_(host, port, TIMEOUT_IN_MILISECONDS, -1, false);
 
 
         end
