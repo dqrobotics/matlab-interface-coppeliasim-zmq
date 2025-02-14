@@ -25,6 +25,12 @@
 
 classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
+    properties (Access = private)
+        client_;
+        sim_;
+        client_created_;
+    end
+
     properties (Access=protected)
         host_;
         rpcPort_;
@@ -40,61 +46,73 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
               end
         end
 
-        function connect_(obj, host, rpcPort, MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION, cntPort, verbose)
-            try
+        function rtn = connect_(obj, host, rpcPort, MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION, cntPort, verbose)
+
                 obj.host_ = host;
                 obj.rpcPort_ = rpcPort;
                 obj.cntPort_ = cntPort;
                 obj.verbose_ = verbose;
                 obj.MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_ = MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION; 
-                
-                fut = parfeval(@zmq_wrapper.create_client, 4, host, rpcPort, cntPort, verbose); 
-                finished = wait(fut, 'finished', 1);    
 
-            catch ME
-                rethrow(ME)
+                try
+                    if ~obj.client_created_ 
+                         obj.client_ = RemoteAPIClient('host', obj.host_,'port',obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
+                         obj.sim_ = obj.client_.require('sim');
+                         obj.client_created_ = true;
+                         obj.set_status_bar_message_('DQ Robotics established a connection on port ' + string(obj.rpcPort_), ...
+                             obj.sim_.verbosity_warnings);
+                    end
+                catch ME
+                    rethrow(ME)
+                end
+
+                rtn = true;
+        end
+
+        function check_client_(obj)
+            if (~obj.client_created_)
+                error('Unestablished connection. Did you use connect()?');
             end
         end
+
+        function set_status_bar_message_(obj, message, verbosity_type)
+            obj.sim_.addLog(verbosity_type, message);
+        end
+
     end
+
     methods
 
         function obj = DQ_CoppeliaSimInterfaceZMQ()
+            obj.client_created_ = false;
         end
         
         function connect(obj, host, port, TIMEOUT_IN_MILISECONDS)
             % This method connects to the remote api server (i.e. CoppeliaSim).
             % Calling this function is required before anything else can happen.
-            switch nargin
-                case 1
-                    host = 'localhost';
-                    port = 23000;
-                    TIMEOUT_IN_MILISECONDS = 300;
-                case 2
-                    obj.validate_input_(host, 'string', 'The host argument must be a string. Example: "localhost", "192.168.120.1".');
-                    port = 23000;
-                    TIMEOUT_IN_MILISECONDS = 300;
-           
-                case 3
-                   obj.validate_input_(host, 'string', 'The host argument must be a string. Example: "localhost", "192.168.120.1".');
-                   obj.validate_input_(port, 'numeric', 'The port argument must be numeric. Example: 23000.');
-                    TIMEOUT_IN_MILISECONDS = 300;
-           
-
-                case 4
-                   obj.validate_input_(host, 'string', 'host must be a string. Example: "localhost", "192.168.120.1".');
-                   obj.validate_input_(port, 'numeric', 'port must be numeric. Example: 23000.');
-                   obj.validate_input_(TIMEOUT_IN_MILISECONDS, 'numeric', 'TIMEOUT_IN_MILISECONDS must be numeric. Example: 300.');
-
-                otherwise
-                  error('Wrong number of arguments');
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                host (1,1) {mustBeText} = 'localhost'
+                port (1,1) {mustBeNumeric} = 23000
+                TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 1000
             end
 
+            
            obj.connect_(host, port, TIMEOUT_IN_MILISECONDS, -1, false);
 
 
         end
 
         function set_stepping_mode(obj, flag)
+            % This method enables or disables the stepping mode (formerly known as synchronous mode). 
+            % Usage : set_stepping_mode(true)   % enables the stepping mode
+            %         set_stepping_mode(false)  % disables the stepping mode
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                flag (1,1) {mustBeNumericOrLogical}
+            end
+            obj.check_client_();
+            obj.sim_.setStepping(flag);
         end
 
         function trigger_next_simulation_step(obj)

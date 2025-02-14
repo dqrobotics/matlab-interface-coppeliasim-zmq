@@ -25,18 +25,12 @@
 %           https://github.com/dqrobotics/cpp-interface-coppeliasim-zmq/blob/main/src/dqrobotics/interfaces/coppeliasim/internal/_zmq_wrapper.h
 
 classdef zmq_wrapper < handle
-
-    
-    properties (Access = private)
-
-        client_;
-        sim_;
-    end
     
     methods(Static, Access=public)
-        function rtn = create_client(obj, host, rpcPort, cntPort, verbose)
-            obj.client_ = RemoteAPIClient('host', host,'port',rpcPort, 'cntPort', cntPort, 'verbose', verbose);
-            obj.sim_ = obj.client_.require('sim');
+        function rtn = create_client(host, rpcPort, cntPort, verbose)
+            client_ = RemoteAPIClient('host', host,'port',rpcPort, 'cntPort', cntPort, 'verbose', verbose);
+            sim_ = obj.client_.require('sim');
+            
             rtn = true;
         end
 
