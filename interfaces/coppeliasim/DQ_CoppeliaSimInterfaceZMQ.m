@@ -29,6 +29,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         client_;
         sim_;
         client_created_;
+        handles_map_;
+        enable_deprecated_name_compatibility_ = true;
     end
 
     properties (Access=protected)
@@ -97,6 +99,61 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             obj.sim_.addLog(verbosity_type, message);
         end
 
+        function rtn = start_with_slash_(~, objectname)
+            % This method returns true if the first character of the
+            % objectname string is '/'. Returns false otherwise.
+            %
+            % Example: start_with_slash_('/joint') % returns true.
+            %          start_with_slash_('frame')  % returns false.
+            %
+            k = strfind(objectname,'/');
+            n = length(k);
+            if (n==0)
+                rtn = false;
+            else
+              if (k(1)==1)
+                rtn = true;
+              else
+                rtn = false;
+              end
+            end
+        end
+
+        function newstr = remove_first_slash_from_string_(obj, str)  
+            % This method removes the slash from the given string only if
+            % the slash is in the first position of the string.
+            % Example:
+            %    remove_first_slash_from_string_('/joint') returns 'joint'
+            %    remove_first_slash_from_string_('robot/joint') returns 'robot/joint'  
+            %
+            if obj.start_with_slash_(str)
+                 newstr = erase(str,"/");
+            else
+                 newstr = str;
+            end
+        end
+
+        function standard_str = get_standard_name_(obj, str)
+            % This method returns a string that starts with a slash in the 
+            % first position.
+            %
+            % Example: get_standard_name_('/robot') % returns '/joint'
+            % Example: get_standard_name_('robot')  % returns '/joint'
+            %
+              standard_str = str;
+              if (~obj.start_with_slash_(str) && obj.enable_deprecated_name_compatibility_ == true)
+                 standard_str = '/'+str;
+              end
+        end
+
+        function check_sizes_(~, v1, v2, message)
+            % This method throws an exception with the desired message if
+            % the sizes of v1 and v2 are different.
+            if (length(v1) ~= length(v2))
+                error(message);
+            end
+        end
+
     end
 
     methods
@@ -138,24 +195,103 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function trigger_next_simulation_step(obj)
+            % This method sends a trigger signal to the CoppeliaSim scene, 
+            % which performs a simulation step when the stepping mode is used.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+            end
+            obj.check_client_();
+            obj.sim_.step();
         end
 
         function start_simulation(obj)
+            % This method starts the CoppeliaSim simulation.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+            end
+            obj.check_client_();
+            obj.sim_.startSimulation();
         end
 
         function stop_simulation(obj)
+             % This method stops the CoppeliaSim simulation.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+            end           
+            obj.check_client_();
+            obj.sim_.stopSimulation()
         end
 
-        function handles = get_object_handles(obj,names)
+        function handles = get_object_handles(obj,objectnames)
+            % This method returns a cell that contains the handles
+            % corresponding to the objectnames.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectnames (1,:) {mustBeText} 
+            end
+            n = length(objectnames);
+            handles = cell(1,n);
+            for i=1:n
+               handles{i} = obj.get_object_handle(objectnames{i});
+            end
         end
 
-        function handle = get_object_handle(obj,name)
+        function handle = get_object_handle(obj,objectname)
+            % get_object_handle gets the object handle from CoppeliaSim. 
+            % If the handle is not included in the map, then the map is updated.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+            end
+            % If the objectname does not start with a slash and the
+            % deprecated name compatibility is not enabled, this method
+            % will throw an exception. Therefore, additional information about the error is
+            % provided to the user.
+            additional_error_message = "";
+            if (~obj.start_with_slash_(objectname) && ...
+                    obj.enable_deprecated_name_compatibility_ == false)      
+                additional_error_message = "Did you mean   " + char(34) + '/' +objectname +  char(34) + '   ?';
+            end
+
+            try
+                obj.check_client_();
+                standard_objectname = obj.get_standard_name_(objectname);
+                handle = obj.sim_.getObject(standard_objectname);
+                obj.update_map_(standard_objectname, handle);
+
+            catch ME
+                
+                msg = "The object "  + char(34) + objectname  + char(34) + " does not exist in the " + ...
+                      "current scene in CoppeliaSim. " + additional_error_message;
+                obj.throw_runtime_error_(ME, msg)
+            end  
+
         end
 
         function t = get_object_translation(obj,objectname)
+            % This method returns the translation of an object in the CoppeliaSim scene.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+            end
+            obj.check_client_();
+            position = obj.sim_.getObjectPosition(obj.get_handle_from_map_(objectname), ...
+            obj.sim_.handle_world);
+            t = DQ(double([position{1},position{2},position{3}]));
         end
 
-        function set_object_translation(obj,objectname,translation)
+        function set_object_translation(obj, objectname, translation)
+            % This method sets the translation of an object in the CoppeliaSim scene.
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+                translation (1,1) DQ
+            end
+            obj.check_client_();
+            vec_t = vec3(translation);
+            position = {vec_t(1), vec_t(2), vec_t(3)};
+            obj.sim_.setObjectPosition(obj.get_handle_from_map_(objectname), ...
+                                       position,obj.sim_.handle_world);
         end
 
         function r = get_object_rotation(obj, objectname)
