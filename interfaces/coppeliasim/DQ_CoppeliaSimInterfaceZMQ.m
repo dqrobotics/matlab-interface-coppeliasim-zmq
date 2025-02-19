@@ -160,26 +160,26 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
            obj.sim_.setJointPosition(obj.get_handle_from_map_(jointname), angle_rad);
         end
 
-        function theta = get_joint_position(obj, jointname)
+        function theta = get_joint_position_(obj, jointname)
            % This method gets the position of a joint in the CoppeliaSim scene.
            obj.check_client_();
            theta = double(obj.sim_.getJointPosition(obj.get_handle_from_map_(jointname)));
         end
 
-        function set_joint_target_position(obj, jointname, angle_rad)
+        function set_joint_target_position_(obj, jointname, angle_rad)
            % This method sets the target position of a joint in the CoppeliaSim scene. 
            obj.check_client_();
            obj.sim_.setJointTargetPosition(obj.get_handle_from_map_(jointname), angle_rad);
         end
 
-        function theta_dot = get_joint_velocity(obj, jointname)
+        function theta_dot = get_joint_velocity_(obj, jointname)
             % This method gets the velocity of a joint in the CoppeliaSim scene.
             obj.check_client_();
             theta_dot = obj.sim_.getObjectFloatParam(obj.get_handle_from_map_(jointname), ...
                         obj.sim_.jointfloatparam_velocity);
         end
 
-        function set_joint_target_velocity(obj, jointname, angle_rad_dot) 
+        function set_joint_target_velocity_(obj, jointname, angle_rad_dot) 
            % This method sets the target velocity of a joint in the CoppeliaSim scene. 
            obj.check_client_();
            obj.sim_.setJointTargetVelocity(obj.get_handle_from_map_(jointname), angle_rad_dot);
@@ -444,6 +444,21 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function set_joint_positions(obj,jointnames, joint_positions)
+            % This method sets the joint positions in the CoppeliaSimscene.
+            % It is required a dynamics disabled scene. 
+            %
+            % Usage:
+            %    set_joint_positions(objectnames, joint_positions)
+            %
+            %       objectnames (cell of strings) The joint names
+            %       joint_positions (vector) The joint positions
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %       u = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+            %
+            %       set_joint_positions(jointnames, u);
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
@@ -451,26 +466,171 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             end
             message = 'Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_positions. jointnames and joint_positions have incompatible sizes';
             obj.check_sizes_(jointnames, joint_positions, message);
-
+            n = length(jointnames);
+            for i=1:n
+               obj.set_joint_position_(jointnames{i}, joint_positions(i));
+            end
 
         end
 
         function joint_positions = get_joint_positions(obj,jointnames)
+            % This method gets the joint positions in the CoppeliaSimscene.
+            % Usage:
+            %    joint_positions = get_joint_positions(jointnames)
+            %
+            %         objectnames (cell of strings) The joint names
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %
+            %      joint_positions = get_joint_positions(jointnames);
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+            end
+            n = length(jointnames);
+            joint_positions = zeros(n,1);
+            for i=1:n
+                joint_positions(i) = obj.get_joint_position_(jointnames{i});
+            end
         end
 
-        function set_joint_target_positions(obj,jointnames,joint_target_positions)
+        function set_joint_target_positions(obj,jointnames, joint_target_positions)
+            % This method sets the joint target positions in the CoppeliaSimscene.
+            % It is required a dynamics enabled scene, and joints in dynamic mode 
+            % with position control mode. 
+            %
+            % Usage:
+            %    set_joint_positions(objectnames, joint_positions)
+            %
+            %       objectnames (cell of strings) The joint names
+            %       joint_target_positions (vector) The joint target positions
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %       u = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+            %
+            %       set_joint_target_positions(jointnames, u);
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+                joint_target_positions (1,:) {mustBeNumeric}
+            end
+           message = 'Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_target_positions. jointnames and joint_target_positions have incompatible sizes';
+           obj.check_sizes_(jointnames, angles_rad, message);   
+           n = length(jointnames);
+           for i=1:n
+               obj.set_joint_target_position_(jointnames{i}, joint_target_positions(i));
+           end
         end
 
         function joint_velocities = get_joint_velocities(obj,jointnames)
+            % This method gets the joint velocities in the CoppeliaSimscene.
+            % Usage:
+            %    joint_velocities = get_joint_velocities(jointnames)
+            %
+            %         objectnames (cell of strings) The joint names
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %
+            %      joint_velocities = get_joint_velocities(jointnames);
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+            end
+           n = length(jointnames);
+           joint_velocities = zeros(n,1);
+           for i=1:n
+               joint_velocities(i) = obj.get_joint_velocity_(jointnames{i});
+           end
         end
 
         function set_joint_target_velocities(obj,jointnames,joint_target_velocities)
+            % This method sets the joint target velocities in the CoppeliaSimscene.
+            % It is required a dynamics enabled scene, and joints in dynamic mode 
+            % with velocity control mode. 
+            %
+            % Usage:
+            %    set_joint_target_velocities(objectnames, joint_target_velocities)
+            %
+            %       objectnames (cell of strings) The joint names
+            %       joint_target_velocities (vector) The joint target velocities
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %       joint_target_velocities = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+            %
+            %       set_joint_target_velocities(jointnames, joint_target_velocities);
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+                joint_target_velocities (1,:) {mustBeNumeric}
+            end
+            message = 'Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_target_velocities. jointnames and joint_target_velocities have incompatible sizes';
+            obj.check_sizes_(jointnames, angles_rad, message);   
+            n = length(jointnames);
+            for i=1:n
+               obj.set_joint_target_velocity_(jointnames{i}, joint_target_velocities(i));
+            end
         end
 
         function set_joint_torques(obj,jointnames,torques)
+            % This method sets the joint torques in the CoppeliaSimscene.
+            % It is required a dynamics enabled scene, and joints in dynamic mode 
+            % with velocity or force control mode. 
+            %
+            % Usage:
+            %    set_joint_torques(objectnames, torques)
+            %
+            %       objectnames (cell of strings) The joint names
+            %       torques (vector) The joint torques
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %       torques = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+            %
+            %       set_joint_torques(jointnames, torques);
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+                torques (1,:) {mustBeNumeric}
+            end
+            message = "Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_torques: " + ...
+                     "jointnames and torques have incompatible sizes";
+            obj.check_sizes_(jointnames, torques, message);   
+            n = length(jointnames);
+            for i=1:n
+                obj.set_joint_torque(jointnames{i}, torques(i));
+            end 
         end
 
         function joint_torques = get_joint_torques(obj,jointnames)
+            % This method gets the joint torques in the CoppeliaSimscene.
+            % Usage:
+            %    torques = get_joint_torques(jointnames)
+            %
+            %         objectnames (cell of strings) The joint names
+            %
+            % Example:
+            %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
+            %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
+            %
+            %      torques = get_joint_torques(jointnames);
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+            end        
+           n = length(jointnames);
+           joint_torques = zeros(n,1);
+           for i=1:n
+               joint_torques(i) = obj.get_joint_torque(jointnames{i});
+           end 
         end
 
     end
