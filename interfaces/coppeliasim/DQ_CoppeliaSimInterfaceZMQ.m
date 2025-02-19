@@ -154,6 +154,37 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             end
         end
 
+        function set_joint_position_(obj, jointname, angle_rad)
+           % This method sets the position of a joint in the CoppeliaSim scene.
+           obj.check_client_();
+           obj.sim_.setJointPosition(obj.get_handle_from_map_(jointname), angle_rad);
+        end
+
+        function theta = get_joint_position(obj, jointname)
+           % This method gets the position of a joint in the CoppeliaSim scene.
+           obj.check_client_();
+           theta = double(obj.sim_.getJointPosition(obj.get_handle_from_map_(jointname)));
+        end
+
+        function set_joint_target_position(obj, jointname, angle_rad)
+           % This method sets the target position of a joint in the CoppeliaSim scene. 
+           obj.check_client_();
+           obj.sim_.setJointTargetPosition(obj.get_handle_from_map_(jointname), angle_rad);
+        end
+
+        function theta_dot = get_joint_velocity(obj, jointname)
+            % This method gets the velocity of a joint in the CoppeliaSim scene.
+            obj.check_client_();
+            theta_dot = obj.sim_.getObjectFloatParam(obj.get_handle_from_map_(jointname), ...
+                        obj.sim_.jointfloatparam_velocity);
+        end
+
+        function set_joint_target_velocity(obj, jointname, angle_rad_dot) 
+           % This method sets the target velocity of a joint in the CoppeliaSim scene. 
+           obj.check_client_();
+           obj.sim_.setJointTargetVelocity(obj.get_handle_from_map_(jointname), angle_rad_dot);
+        end
+
     end
 
     methods
@@ -269,7 +300,19 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function t = get_object_translation(obj,objectname)
-            % This method returns the translation of an object in the CoppeliaSim scene.
+            % This method returns a pure quaternion that represents the translation of an object 
+            % in the CoppeliaSim scene.
+            %
+            % Usage:
+            %    t = get_object_translation(objectname)
+            %
+            %       objectname The object name
+            %       t A pure quaternion that represents the translation of
+            %       the desired object in the CoppeliaSim scene.
+            %
+            % Example:
+            %
+            %      t = get_object_translation('DefaultCamera');
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,1) {mustBeText} 
@@ -282,6 +325,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function set_object_translation(obj, objectname, translation)
             % This method sets the translation of an object in the CoppeliaSim scene.
+            %
+            % Usage:
+            %    set_object_translation(objectname)
+            %
+            %       objectname (string) The object name
+            %       translation (pure quaternion) The desired translation
+            % Example:
+            %
+            %      set_object_translation('DefaultCamera', t);  
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,1) {mustBeText} 
@@ -295,18 +347,112 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function r = get_object_rotation(obj, objectname)
+            % This method returns a unit quaternion that represents the rotation of an object 
+            % in the CoppeliaSim scene.
+            %
+            % Usage:
+            %    r = get_object_rotation(objectname)
+            %
+            %       objectname The object name
+            %       r A unit quaternion that represents the rotation of
+            %       the desired object in the CoppeliaSim scene.
+            %
+            % Example:
+            %
+            %      r = get_object_rotation('DefaultCamera');
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+            end
+           obj.check_client_();
+           rotation = obj.sim_.getObjectQuaternion(obj.get_handle_from_map_(objectname) ...
+                        + obj.sim_.handleflag_wxyzquat, obj.sim_.handle_world);
+           r = normalize(DQ(double([rotation{1},rotation{2},rotation{3}, rotation{4}])));
         end
 
-        function set_object_rotation(obj,objectname,rotation)
+        function set_object_rotation(obj,objectname, rotation)
+            % This method sets the rotation of an object in the CoppeliaSim scene.
+            %
+            % Usage:
+            %    set_object_rotation(objectname)
+            %
+            %       objectname (string) The object name
+            %       rotation (unit quaternion) The desired rotation
+            % Example:
+            %
+            %      set_object_translation('DefaultCamera', r);  
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+                rotation (1,1) DQ
+            end
+            obj.check_client_();
+            vec_r = vec4(rotation);
+            rotation = {vec_r(1), vec_r(2), vec_r(3), vec_r(4)};
+            obj.sim_.setObjectQuaternion(obj.get_handle_from_map_(objectname) ...
+                        + obj.sim_.handleflag_wxyzquat, rotation, obj.sim_.handle_world);
         end
 
         function x = get_object_pose(obj,objectname)
+            % This method returns a unit dual quaternion that represents the pose of an object 
+            % in the CoppeliaSim scene.
+            %
+            % Usage:
+            %    x = get_object_pose(objectname)
+            %
+            %       objectname The object name
+            %       x A unit dual quaternion that represents the pose of
+            %       the desired object in the CoppeliaSim scene.
+            %
+            % Example:
+            %
+            %      x = get_object_pose('DefaultCamera');
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+            end
+           t = obj.get_object_translation(objectname);
+           r = obj.get_object_rotation(objectname);
+           x = r + 0.5*DQ.E*t*r;
         end
 
         function set_object_pose(obj,objectname,pose)
+            % This method sets the pose of an object in the CoppeliaSim scene.
+            %
+            % Usage:
+            %    set_object_pose(objectname, pose)
+            %
+            %       objectname (string) The object name
+            %       pose (unit dual quaternion) The desired pose
+            % Example:
+            %
+            %      set_object_pose('DefaultCamera', pose);  
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                objectname (1,1) {mustBeText} 
+                pose (1,1) DQ
+            end
+            if ~is_unit(pose)
+                error('Bad call in DQ_CoppeliaSimInterfaceZMQ.set_object_pose. The pose must be a unit dual quaternion!');
+            end
+            obj.check_client_();
+            vec_r = h.P().vec4();
+            vec_t = h.translation().vec3(); 
+            pose = {vec_t(1), vec_t(2), vec_t(3),vec_r(1), vec_r(2), vec_r(3), vec_r(4)};
+            obj.sim_.setObjectPose(obj.get_handle_from_map_(objectname) + obj.sim_.handleflag_wxyzquat, ...
+                     pose, obj.sim_.handle_world);
         end
 
-        function set_joint_positions(obj,jointnames,joint_positions)
+        function set_joint_positions(obj,jointnames, joint_positions)
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                jointnames (1,:) {mustBeText} 
+                joint_positions (1,:) {mustBeNumeric}
+            end
+            message = 'Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_positions. jointnames and joint_positions have incompatible sizes';
+            obj.check_sizes_(jointnames, joint_positions, message);
+
+
         end
 
         function joint_positions = get_joint_positions(obj,jointnames)
