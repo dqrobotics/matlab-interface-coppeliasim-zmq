@@ -206,7 +206,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection.       
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                host (1,1) {mustBeText} = 'localhost'
+                host (1,1) {mustBeText} = "localhost"
                 port (1,1) {mustBeNumeric} = 23000
                 TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 1000
             end     
