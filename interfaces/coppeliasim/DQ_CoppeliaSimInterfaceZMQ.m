@@ -146,6 +146,34 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
               end
         end
 
+        function rtn = get_handle_from_map_(obj, objectname)
+            % This method searchs a handle in the map. If the handle is not found, 
+            % it is taken from CoppeliaSim and the map is updated
+            % by using the get_object_handle() method.
+            if isConfigured(obj.handles_map_)
+                if (isKey(obj.handles_map_ , objectname))
+                  rtn = obj.handles_map_(objectname);
+                else
+                  rtn = obj.get_object_handle(objectname);
+                end
+            else
+                rtn = obj.get_object_handle(objectname);
+            end
+        end
+
+        function throw_runtime_error_(~, ME, msg)
+            % This method throws an exception after showing a custom
+            % message.
+            disp(msg);
+            rethrow(ME); 
+        end
+
+        function update_map_(obj, objectname, handle)
+            % This method updates the map. The map is updated only if the objectname is not in the map.
+            % In other words, it is not allowed to have an objectname twice in the map.
+                obj.handles_map_ = insert(obj.handles_map_, objectname, handle);
+        end
+
         function check_sizes_(~, v1, v2, message)
             % This method throws an exception with the desired message if
             % the sizes of v1 and v2 are different.
@@ -191,6 +219,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function obj = DQ_CoppeliaSimInterfaceZMQ()
             obj.client_created_ = false;
+            obj.handles_map_ = dictionary;
         end
         
         function status = connect(obj, host, port, TIMEOUT_IN_MILISECONDS)
@@ -272,7 +301,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % If the handle is not included in the map, then the map is updated.
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} 
             end
             % If the objectname does not start with a slash and the
             % deprecated name compatibility is not enabled, this method
