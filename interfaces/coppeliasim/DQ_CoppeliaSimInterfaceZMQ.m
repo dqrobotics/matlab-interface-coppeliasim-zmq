@@ -140,6 +140,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % Example: get_standard_name_('/robot') % returns '/joint'
             % Example: get_standard_name_('robot')  % returns '/joint'
             %
+            arguments
+                obj DQ_CoppeliaSimInterfaceZMQ
+                str string
+            end
               standard_str = str;
               if (~obj.start_with_slash_(str) && obj.enable_deprecated_name_compatibility_ == true)
                  standard_str = '/'+str;
@@ -228,6 +232,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     methods
 
         function obj = DQ_CoppeliaSimInterfaceZMQ()
+            % Constructor of the class. 
+            % Example:
+            %
+            % cs = DQ_CoppeliaSimInterfaceZMQ();
+            % cs.connect();
+            % cs.start_simulation();
+            % x = cs.get_object_pose("/Floor")
+            % cs.stop_simulation();
+            %
             obj.client_created_ = false;
             obj.handles_map_ = dictionary; % containers.Map; 
             disp(['This version of DQ Robotics DQ_CoppeliaSimInterfaceZMQ is compatible'...
@@ -316,7 +329,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % If the handle is not included in the map, then the map is updated.
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,:) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
             end
             % If the objectname does not start with a slash and the
             % deprecated name compatibility is not enabled, this method
@@ -359,7 +372,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      t = get_object_translation('DefaultCamera');
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
             end
             obj.check_client_();
             position = obj.sim_.getObjectPosition(obj.get_handle_from_map_(objectname), ...
@@ -380,7 +393,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      set_object_translation('DefaultCamera', t);  
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters. 
                 translation (1,1) DQ
             end
             obj.check_client_();
@@ -406,7 +419,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      r = get_object_rotation('DefaultCamera');
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
             end
            obj.check_client_();
            rotation = obj.sim_.getObjectQuaternion(obj.get_handle_from_map_(objectname) ...
@@ -427,7 +440,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      set_object_translation('DefaultCamera', r);  
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
                 rotation (1,1) DQ
             end
             obj.check_client_();
@@ -453,7 +466,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      x = get_object_pose('DefaultCamera');
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
             end
            t = obj.get_object_translation(objectname);
            r = obj.get_object_rotation(objectname);
@@ -473,15 +486,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      set_object_pose('DefaultCamera', pose);  
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                objectname (1,1) {mustBeText} 
+                objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
                 pose (1,1) DQ
             end
             if ~is_unit(pose)
                 error('Bad call in DQ_CoppeliaSimInterfaceZMQ.set_object_pose. The pose must be a unit dual quaternion!');
             end
             obj.check_client_();
-            vec_r = h.P().vec4();
-            vec_t = h.translation().vec3(); 
+            vec_r = vec4(P(pose));
+            vec_t = vec3(translation(pose)); 
             pose = {vec_t(1), vec_t(2), vec_t(3),vec_r(1), vec_r(2), vec_r(3), vec_r(4)};
             obj.sim_.setObjectPose(obj.get_handle_from_map_(objectname) + obj.sim_.handleflag_wxyzquat, ...
                      pose, obj.sim_.handle_world);
@@ -616,7 +629,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 joint_target_velocities (1,:) {mustBeNumeric}
             end
             message = 'Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_target_velocities. jointnames and joint_target_velocities have incompatible sizes';
-            obj.check_sizes_(jointnames, angles_rad, message);   
+            obj.check_sizes_(jointnames, joint_target_velocities, message);   
             n = length(jointnames);
             for i=1:n
                obj.set_joint_target_velocity_(jointnames{i}, joint_target_velocities(i));
@@ -677,6 +690,22 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
            end 
         end
 
+    end
+
+    methods % Deprecated methods to ensure backwards compatibility
+        function disconnect_all(~)
+            warning("This method is deprecated and is not required with ZeroMQ remote API.");
+        end
+        function disconnect(~)
+            warning("This method is deprecated and is not required with ZeroMQ remote API.");
+        end
+        function set_synchronous(obj, flag)
+            warning("The synchronous mode is now called stepping mode. Consider using set_stepping_mode(flag) instead.");
+            obj.set_stepping_mode(flag);
+        end
+        function wait_for_simulation_step_to_end(~)
+            warning("This method is deprecated and is not required with ZeroMQ remote API.");
+        end
     end
 end
 
