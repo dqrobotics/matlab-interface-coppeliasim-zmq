@@ -220,6 +220,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function obj = DQ_CoppeliaSimInterfaceZMQ()
             obj.client_created_ = false;
             obj.handles_map_ = dictionary;
+            disp(['This version of DQ Robotics DQ_CoppeliaSimInterfaceZMQ is compatible'...
+                  ' with CoppeliaSim  4.7.0-rev4']);
         end
         
         function status = connect(obj, host, port, TIMEOUT_IN_MILISECONDS)
