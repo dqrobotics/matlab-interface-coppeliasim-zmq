@@ -174,6 +174,16 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 obj.handles_map_ = insert(obj.handles_map_, objectname, handle);
         end
 
+        function rtn = get_port_from_deprecated_default_port_(~, port)
+            auxport = port;
+            if port == 19997 || port == 19998 || port == 19999 || port == 20000
+                auxport = 23000;
+                warning("The port " + int2str(port) + " is commonly used in the legacy API. " + ...
+                    "However it is not compatible with the ZMQ Remote API. I changed the port to " + int2str(auxport));
+            end
+            rtn = auxport;
+        end
+
         function check_sizes_(~, v1, v2, message)
             % This method throws an exception with the desired message if
             % the sizes of v1 and v2 are different.
@@ -219,7 +229,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function obj = DQ_CoppeliaSimInterfaceZMQ()
             obj.client_created_ = false;
-            obj.handles_map_ = dictionary;
+            obj.handles_map_ = dictionary; % containers.Map; 
             disp(['This version of DQ Robotics DQ_CoppeliaSimInterfaceZMQ is compatible'...
                   ' with CoppeliaSim  4.7.0-rev4']);
         end
@@ -237,10 +247,13 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection.       
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
-                host (1,1) {mustBeText} = "localhost"
+                host (1,:) {mustBeText} = "localhost" % The size is (1,:) to be compatible with strings and vector of characters.
                 port (1,1) {mustBeNumeric} = 23000
                 TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 1000
             end     
+            if (nargin == 3)
+                port = obj.get_port_from_deprecated_default_port_(port);
+            end
             status = obj.connect_(host, port, TIMEOUT_IN_MILISECONDS, -1, false);
         end
 
