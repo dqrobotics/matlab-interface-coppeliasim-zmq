@@ -180,6 +180,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function rtn = get_port_from_deprecated_default_port_(~, port)
+            % This method returns the default ZMQ port if the input port 
+            % corresponds to a default port of the legacy API.
             auxport = port;
             if port == 19997 || port == 19998 || port == 19999 || port == 20000
                 auxport = 23000;
