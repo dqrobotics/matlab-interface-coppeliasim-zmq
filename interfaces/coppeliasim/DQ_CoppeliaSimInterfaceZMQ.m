@@ -44,13 +44,12 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     end
     
     methods (Access = protected)
-        % function validate_input_(~, input, class, msg)
-        %       if ~isa(input, class)
-        %           error(msg)
-        %       end
-        % end
 
-        function rtn = create_container_for_maps_(obj)
+        function rtn = create_container_or_dictionary_(obj)
+            % This method returns an uninitialized dictionary or
+            % containers.Map. The type of return depends on the property
+            % use_dictionaries_for_maps_, which must be set first in the
+            % constructor of the class.
             if obj.use_dictionaries_for_maps_
                 rtn = dictionary;
             else
@@ -59,34 +58,34 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function rtn = connect_(obj, host, rpcPort, MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION, cntPort, verbose)
-                % This method initializes the remote API client. 
-                %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
-                %             and the simulation are running in the same computer, you can use "localhost".
-                %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
-                %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection. 
-                %                               However, this timeout feature is not implemented yet.
-                %        cntPort: This parameter is not well documented on
-                %        the remote API. A typical value is -1
-                %        verbose: This parameter is not well documented on
-                %        the remote API. A typical value is false.
-                obj.host_ = host;
-                obj.rpcPort_ = rpcPort;
-                obj.cntPort_ = cntPort;
-                obj.verbose_ = verbose;
-                obj.MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_ = MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION; 
+            % This method initializes the remote API client. 
+            %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
+            %             and the simulation are running in the same computer, you can use "localhost".
+            %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
+            %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection. 
+            %                               However, this timeout feature is not implemented yet.
+            %        cntPort: This parameter is not well documented on
+            %        the remote API. A typical value is -1
+            %        verbose: This parameter is not well documented on
+            %        the remote API. A typical value is false.
+            obj.host_ = host;
+            obj.rpcPort_ = rpcPort;
+            obj.cntPort_ = cntPort;
+            obj.verbose_ = verbose;
+            obj.MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_ = MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION; 
 
-                try
-                    if ~obj.client_created_ 
-                         obj.client_ = RemoteAPIClient('host', obj.host_,'port',obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
-                         obj.sim_ = obj.client_.require('sim');
-                         obj.client_created_ = true;
-                         obj.set_status_bar_message_('DQ Robotics established a connection on port ' + string(obj.rpcPort_), ...
-                             obj.sim_.verbosity_warnings);
-                    end
-                catch ME
-                    rethrow(ME)
+            try
+                if ~obj.client_created_ 
+                     obj.client_ = RemoteAPIClient('host', obj.host_,'port',obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
+                     obj.sim_ = obj.client_.require('sim');
+                     obj.client_created_ = true;
+                     obj.set_status_bar_message_('DQ Robotics established a connection on port ' + string(obj.rpcPort_), ...
+                         obj.sim_.verbosity_warnings);
                 end
-                rtn = true;
+            catch ME
+                rethrow(ME)
+            end
+            rtn = true;
         end
 
         function check_client_(obj)
@@ -302,8 +301,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % To use dictionaries, use obj.use_dictionaries_for_maps = true
             obj.use_dictionaries_for_maps_ = false;
 
-            % Initialize the containers.Map (or dictionaries)
-            obj.handles_map_ = obj.create_container_for_maps_(); 
+            % create the containers.Map (or dictionary)
+            obj.handles_map_ = obj.create_container_or_dictionary_(); 
 
             disp("This version of DQ_CoppeliaSimInterfaceZMQ is compatible" + ...
                   " with CoppeliaSim " + obj.compatible_version_);
