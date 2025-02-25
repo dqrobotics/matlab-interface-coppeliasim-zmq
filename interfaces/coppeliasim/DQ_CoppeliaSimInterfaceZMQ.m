@@ -39,6 +39,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         cntPort_;
         verbose_;
         MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_;
+        compatible_version_ = "4.7.0-rev4";
     end
     
     methods (Access = protected)
@@ -243,8 +244,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %
             obj.client_created_ = false;
             obj.handles_map_ = dictionary; % containers.Map; 
-            disp(['This version of DQ Robotics DQ_CoppeliaSimInterfaceZMQ is compatible'...
-                  ' with CoppeliaSim  4.7.0-rev4']);
+            disp("This version of DQ_CoppeliaSimInterfaceZMQ is compatible" + ...
+                  " with CoppeliaSim " + obj.compatible_version_);
         end
         
         function status = connect(obj, host, port, TIMEOUT_IN_MILISECONDS)
@@ -576,7 +577,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 joint_target_positions (1,:) {mustBeNumeric}
             end
            message = 'Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_target_positions. jointnames and joint_target_positions have incompatible sizes';
-           obj.check_sizes_(jointnames, angles_rad, message);   
+           obj.check_sizes_(jointnames, joint_target_positions, message);   
            n = length(jointnames);
            for i=1:n
                obj.set_joint_target_position_(jointnames{i}, joint_target_positions(i));
@@ -694,17 +695,17 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
     methods % Deprecated methods to ensure backwards compatibility
         function disconnect_all(~)
-            warning("This method is deprecated and is not required with ZeroMQ remote API.");
+            warning("The method disconnect_all is deprecated and is not required with ZeroMQ remote API.");
         end
         function disconnect(~)
-            warning("This method is deprecated and is not required with ZeroMQ remote API.");
+            warning("The method disconnect is deprecated and is not required with ZeroMQ remote API.");
         end
         function set_synchronous(obj, flag)
-            warning("The synchronous mode is now called stepping mode. Consider using set_stepping_mode(flag) instead.");
+            warning("The method set_synchronous is deprecated. Consider using set_stepping_mode(flag) instead.");
             obj.set_stepping_mode(flag);
         end
         function wait_for_simulation_step_to_end(~)
-            warning("This method is deprecated and is not required with ZeroMQ remote API.");
+            warning("The method wait_for_simulation_step_to_end is deprecated and is not required with ZeroMQ remote API.");
         end
     end
 end
