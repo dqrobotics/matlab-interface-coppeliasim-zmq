@@ -76,7 +76,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
             try
                 if ~obj.client_created_ 
-                     obj.client_ = RemoteAPIClient('host', obj.host_,'port',obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
+                     obj.client_ = RemoteAPIClient('host', obj.host_,'port', obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
                      obj.sim_ = obj.client_.require('sim');
                      obj.client_created_ = true;
                      obj.set_status_bar_message_('DQ Robotics established a connection on port ' + string(obj.rpcPort_), ...
@@ -86,6 +86,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 rethrow(ME)
             end
             rtn = true;
+            
         end
 
         function check_client_(obj)
@@ -273,7 +274,6 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %
             obj.client_created_ = false;
 
-
             % Enable name compatibility
             % If enable_deprecated_name_compatibility_ is set true, 
             % the class will accept names without the initial slash.
@@ -318,12 +318,12 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
             %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
-            %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection.       
+            %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection. However, this feature is not implemented yet.    
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 host (1,:) {mustBeText} = "localhost" % The size is (1,:) to be compatible with strings and vector of characters.
                 port (1,1) {mustBeNumeric} = 23000
-                TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 1000
+                TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 5000
             end     
             if (nargin == 3)
                 port = obj.get_port_from_deprecated_default_port_(port);
