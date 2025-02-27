@@ -30,7 +30,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         sim_;
         client_created_;
         handles_map_;
-        enable_deprecated_name_compatibility_ = true;
+        enable_deprecated_name_compatibility_;
+        use_dictionaries_for_maps_;
     end
 
     properties (Access=protected)
@@ -43,41 +44,49 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     end
     
     methods (Access = protected)
-        function validate_input_(~, input, class, msg)
-              if ~isa(input, class)
-                  error(msg)
-              end
+
+        function rtn = create_container_or_dictionary_(obj)
+            % This method returns an uninitialized dictionary or
+            % containers.Map. The type of return depends on the property
+            % use_dictionaries_for_maps_, which must be set first in the
+            % constructor of the class.
+            if obj.use_dictionaries_for_maps_
+                rtn = dictionary;
+            else
+                rtn = containers.Map;
+            end
         end
 
         function rtn = connect_(obj, host, rpcPort, MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION, cntPort, verbose)
-                % This method initializes the remote API client. 
-                %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
-                %             and the simulation are running in the same computer, you can use "localhost".
-                %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
-                %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection. 
-                %                               However, this timeout feature is not implemented yet.
-                %        cntPort: This parameter is not well documented on
-                %        the remote API. A typical value is -1
-                %        verbose: This parameter is not well documented on
-                %        the remote API. A typical value is false.
-                obj.host_ = host;
-                obj.rpcPort_ = rpcPort;
-                obj.cntPort_ = cntPort;
-                obj.verbose_ = verbose;
-                obj.MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_ = MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION; 
+            % This method initializes the remote API client. 
+            %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
+            %             and the simulation are running in the same computer, you can use "localhost".
+            %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
+            %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection. 
+            %                               However, this timeout feature is not implemented yet.
+            %        cntPort: This parameter is not well documented on
+            %        the remote API. A typical value is -1
+            %        verbose: This parameter is not well documented on
+            %        the remote API. A typical value is false.
+            obj.host_ = host;
+            obj.rpcPort_ = rpcPort;
+            obj.cntPort_ = cntPort;
+            obj.verbose_ = verbose;
+            obj.MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION_ = MAX_TIME_IN_MILLISECONDS_TO_TRY_CONNECTION; 
 
-                try
-                    if ~obj.client_created_ 
-                         obj.client_ = RemoteAPIClient('host', obj.host_,'port',obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
-                         obj.sim_ = obj.client_.require('sim');
-                         obj.client_created_ = true;
-                         obj.set_status_bar_message_('DQ Robotics established a connection on port ' + string(obj.rpcPort_), ...
-                             obj.sim_.verbosity_warnings);
-                    end
-                catch ME
-                    rethrow(ME)
+            try
+                if ~obj.client_created_ 
+                     obj.client_ = RemoteAPIClient('host', obj.host_,'port', obj.rpcPort_, 'cntPort', obj.cntPort_, 'verbose', obj.verbose_);
+                     obj.sim_ = obj.client_.require('sim');
+                     obj.client_created_ = true;
+                     obj.set_status_bar_message_('DQ Robotics established a connection on port ' + string(obj.rpcPort_), ...
+                         obj.sim_.verbosity_warnings);
                 end
-                rtn = true;
+            catch ME
+                rethrow(ME)
+            end
+            rtn = true;
+            
         end
 
         function check_client_(obj)
@@ -112,11 +121,11 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             if (n==0)
                 rtn = false;
             else
-              if (k(1)==1)
-                rtn = true;
-              else
-                rtn = false;
-              end
+                if (k(1)==1)
+                     rtn = true;
+                else
+                     rtn = false;
+                end
             end
         end
 
@@ -155,14 +164,26 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method searchs a handle in the map. If the handle is not found, 
             % it is taken from CoppeliaSim and the map is updated
             % by using the get_object_handle() method.
-            if isConfigured(obj.handles_map_)
+            %
+            if (obj.use_dictionaries_for_maps_)
+                % For dictionaries    
+                if isConfigured(obj.handles_map_)
+                    if (isKey(obj.handles_map_ , objectname))
+                      rtn = obj.handles_map_(objectname);
+                    else
+                      rtn = obj.get_object_handle(objectname);
+                    end
+                else
+                    rtn = obj.get_object_handle(objectname);
+                end
+
+            else
+                % For containers.Map
                 if (isKey(obj.handles_map_ , objectname))
                   rtn = obj.handles_map_(objectname);
                 else
                   rtn = obj.get_object_handle(objectname);
                 end
-            else
-                rtn = obj.get_object_handle(objectname);
             end
         end
 
@@ -176,7 +197,14 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function update_map_(obj, objectname, handle)
             % This method updates the map. The map is updated only if the objectname is not in the map.
             % In other words, it is not allowed to have an objectname twice in the map.
-                obj.handles_map_ = insert(obj.handles_map_, objectname, handle);
+
+            if (obj.use_dictionaries_for_maps_)
+                % For dictionaries
+                obj.handles_map_ = insert(obj.handles_map_, objectname, handle);     
+            else          
+                % For containers.Map
+                obj.handles_map_(objectname) = handle;
+            end
         end
 
         function rtn = get_port_from_deprecated_default_port_(~, port)
@@ -245,7 +273,37 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % cs.stop_simulation();
             %
             obj.client_created_ = false;
-            obj.handles_map_ = dictionary; % containers.Map; 
+
+            % Enable name compatibility
+            % If enable_deprecated_name_compatibility_ is set true, 
+            % the class will accept names without the initial slash.
+            % Example: The user can use: 
+            %      get_objec t_pose("/Franka") or get_objec t_pose("Franka")
+            %
+            % If the flag is set to false, then the class only will accept
+            % names in which the first character is a slash. This is the
+            % default behavior of the ZeroMQ Remote API. 
+
+            % Accept both styles in the objectnames (i.e., "/name" or "name")
+            obj.enable_deprecated_name_compatibility_ = true;
+
+            % Note for future developers:
+            %
+            % Matlab recommends the use of dictionaries over container maps
+            % because it accepts more data types as keys and values and provides better performance.
+            % However, dictionaries are available since Matlab R2022. Because of that, 
+            % the maps are implemented using containers.Map
+            %
+            % Source:
+            % https://uk.mathworks.com/help/matlab/ref/containers.map.html
+  
+            % This flag forces the use of a containers.Map
+            % To use dictionaries, use obj.use_dictionaries_for_maps = true
+            obj.use_dictionaries_for_maps_ = false;
+
+            % create the containers.Map (or dictionary)
+            obj.handles_map_ = obj.create_container_or_dictionary_(); 
+
             disp("This version of DQ_CoppeliaSimInterfaceZMQ is compatible" + ...
                   " with CoppeliaSim " + obj.compatible_version_);
         end
@@ -260,12 +318,12 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
             %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
-            %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection.       
+            %        TIMEOUT_IN_MILISECONDS The timeout to establish the connection. However, this feature is not implemented yet.    
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 host (1,:) {mustBeText} = "localhost" % The size is (1,:) to be compatible with strings and vector of characters.
                 port (1,1) {mustBeNumeric} = 23000
-                TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 1000
+                TIMEOUT_IN_MILISECONDS (1,1) {mustBeNumeric} = 5000
             end     
             if (nargin == 3)
                 port = obj.get_port_from_deprecated_default_port_(port);
