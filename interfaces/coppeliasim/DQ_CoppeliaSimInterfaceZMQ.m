@@ -121,11 +121,11 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             if (n==0)
                 rtn = false;
             else
-              if (k(1)==1)
-                rtn = true;
-              else
-                rtn = false;
-              end
+                if (k(1)==1)
+                     rtn = true;
+                else
+                     rtn = false;
+                end
             end
         end
 
