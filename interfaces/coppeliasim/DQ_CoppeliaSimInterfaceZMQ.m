@@ -261,21 +261,13 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function torque = get_joint_torque_(obj, jointname)
             % This method gets the torque of a joint in the CoppeliaSim scene.
             obj.check_client_();
-            torque = obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
+            torque = -obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
         end
 
         function set_joint_torque_(obj, jointname, torque) 
            % This method sets the torque of a joint in the CoppeliaSim scene. 
            obj.check_client_();
-           angle_dot_rad_max = 10000.0;
-           if (torque==0)      
-                angle_dot_rad_max = 0.0;
-           elseif (torque<0)
-                angle_dot_rad_max = -10000.0;
-           end
-           handle = obj.get_handle_from_map_(jointname);
-           obj.sim_.setJointTargetVelocity(handle, angle_dot_rad_max);
-           obj.sim_.setJointTargetForce(handle, abs(torque));
+           obj.sim_.setJointTargetForce(obj.get_handle_from_map_(jointname), torque, true);
         end
 
     end
