@@ -258,6 +258,25 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
            obj.sim_.setJointTargetVelocity(obj.get_handle_from_map_(jointname), angle_rad_dot);
         end
 
+        function torque = get_joint_torque_(obj, jointname)
+            % This method gets the torque of a joint in the CoppeliaSim scene.
+            obj.check_client_();
+            torque = obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
+        end
+
+        function set_joint_torque_(obj, jointname, torque) 
+           % This method sets the torque of a joint in the CoppeliaSim scene. 
+           obj.check_client_();
+           if (torque==0)      
+                angle_dot_rad_max = 0.0;
+           elseif (torque<0)
+                angle_dot_rad_max = -10000.0;
+           end
+           handle = obj.get_handle_from_map_(jointname);
+           obj.sim_.setJointTargetVelocity(handle, angle_dot_rad_max);
+           obj.sim_.setJointTargetForce(handle, abs(torque));
+        end
+
     end
 
     methods
@@ -724,7 +743,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             obj.check_sizes_(jointnames, torques, message);   
             n = length(jointnames);
             for i=1:n
-                obj.set_joint_torque(jointnames{i}, torques(i));
+                obj.set_joint_torque_(jointnames{i}, torques(i));
             end 
         end
 
@@ -747,7 +766,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
            n = length(jointnames);
            joint_torques = zeros(n,1);
            for i=1:n
-               joint_torques(i) = obj.get_joint_torque(jointnames{i});
+               joint_torques(i) = obj.get_joint_torque_(jointnames{i});
            end 
         end
 
