@@ -267,6 +267,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function set_joint_torque_(obj, jointname, torque) 
            % This method sets the torque of a joint in the CoppeliaSim scene. 
            obj.check_client_();
+           angle_dot_rad_max = 10000.0;
            if (torque==0)      
                 angle_dot_rad_max = 0.0;
            elseif (torque<0)
