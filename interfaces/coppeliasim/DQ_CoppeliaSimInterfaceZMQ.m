@@ -604,7 +604,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function joint_positions = get_joint_positions(obj,jointnames)
-            % This method gets the joint positions in the CoppeliaSimscene.
+            % This method gets the joint positions in the CoppeliaSim scene.
             % Usage:
             %    joint_positions = get_joint_positions(jointnames)
             %
@@ -627,7 +627,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function set_joint_target_positions(obj,jointnames, joint_target_positions)
-            % This method sets the joint target positions in the CoppeliaSimscene.
+            % This method sets the joint target positions in the CoppeliaSim scene.
             % It is required a dynamics enabled scene, and joints in dynamic mode 
             % with position control mode. 
             %
@@ -657,7 +657,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function joint_velocities = get_joint_velocities(obj,jointnames)
-            % This method gets the joint velocities in the CoppeliaSimscene.
+            % This method gets the joint velocities in the CoppeliaSim scene.
             % Usage:
             %    joint_velocities = get_joint_velocities(jointnames)
             %
@@ -680,7 +680,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function set_joint_target_velocities(obj,jointnames,joint_target_velocities)
-            % This method sets the joint target velocities in the CoppeliaSimscene.
+            % This method sets the joint target velocities in the CoppeliaSim scene.
             % It is required a dynamics enabled scene, and joints in dynamic mode 
             % with velocity control mode. 
             %
@@ -710,7 +710,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function set_joint_torques(obj,jointnames,torques)
-            % This method sets the joint torques in the CoppeliaSimscene.
+            % This method sets the joint torques in the CoppeliaSim scene.
             % It is required a dynamics enabled scene, and joints in dynamic mode 
             % with velocity or force control mode. 
             %
@@ -741,7 +741,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function joint_torques = get_joint_torques(obj,jointnames)
-            % This method gets the joint torques in the CoppeliaSimscene.
+            % This method gets the joint torques in the CoppeliaSim scene.
             % Usage:
             %    torques = get_joint_torques(jointnames)
             %
