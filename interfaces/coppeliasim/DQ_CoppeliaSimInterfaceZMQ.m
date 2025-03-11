@@ -258,14 +258,28 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
            obj.sim_.setJointTargetVelocity(obj.get_handle_from_map_(jointname), angle_rad_dot);
         end
 
-        function torque = get_joint_torque_(obj, jointname)
-            % This method gets the torque of a joint in the CoppeliaSim scene.
+        function force = get_joint_force_(obj, jointname)
+            % This method gets the force of a joint in the CoppeliaSim scene.
             obj.check_client_();
-            torque = -obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
+
+            % The getJointForce method retrieves the force or torque applied to a joint along/about its active axis. 
+            % This method uses the joint perspective, which returns an inverted signal value. 
+            % For instance, if the joint is set to have a positive target force (e.g., using setJointTargetForce), 
+            % the direction of motion will follow the right-hand rule. 
+            % However, when using getJointForce, which uses the joint perspective, this motion is seen as clockwise, 
+            % resulting in a negative value. 
+            % 
+            % More information:
+            %  https://manual.coppeliarobotics.com/en/regularApi/simGetJointForce.htm
+            %  https://forum.coppeliarobotics.com/viewtopic.php?p=41694&hilit=getJointForce#p41694
+            % 
+            % Therefore, to return a joint force using the same reference that 
+            % setJointTargetForce uses, we multiply by -1.
+            force = -obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
         end
 
-        function set_joint_torque_(obj, jointname, torque) 
-           % This method sets the torque of a joint in the CoppeliaSim scene. 
+        function set_joint_target_force_(obj, jointname, torque) 
+           % This method sets the target force of a joint in the CoppeliaSim scene. 
            obj.check_client_();
            obj.sim_.setJointTargetForce(obj.get_handle_from_map_(jointname), torque, true);
         end
@@ -632,8 +646,9 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function set_joint_target_positions(obj, jointnames, joint_target_positions)
             % This method sets the joint target positions in the CoppeliaSim scene.
-            % It is required a dynamics enabled scene, and joints in dynamic mode 
-            % with position control mode. 
+            % It requires a dynamics-enabled scene and joints in dynamic mode with position control mode. 
+            % For more information about joint modes:
+            % https://www.coppeliarobotics.com/helpFiles/en/jointModes.htm
             %
             % Usage:
             %    set_joint_positions(objectnames, joint_positions)
@@ -685,8 +700,9 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function set_joint_target_velocities(obj, jointnames, joint_target_velocities)
             % This method sets the joint target velocities in the CoppeliaSim scene.
-            % It is required a dynamics enabled scene, and joints in dynamic mode 
-            % with velocity control mode. 
+            % It requires a dynamics-enabled scene and joints in dynamic mode with velocity control mode. 
+            % For more information about joint modes:
+            % https://www.coppeliarobotics.com/helpFiles/en/jointModes.htm
             %
             % Usage:
             %    set_joint_target_velocities(objectnames, joint_target_velocities)
@@ -713,41 +729,42 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             end
         end
 
-        function set_joint_torques(obj, jointnames, torques)
-            % This method sets the joint torques in the CoppeliaSim scene.
-            % It is required a dynamics enabled scene, and joints in dynamic mode 
-            % with velocity or force control mode. 
+        function set_joint_target_forces(obj, jointnames, forces)
+            % This method sets the joint target forces in the CoppeliaSim scene.
+            % It requires a dynamics-enabled scene and joints in dynamic mode with force control mode. 
+            % For more information about joint modes:
+            % https://www.coppeliarobotics.com/helpFiles/en/jointModes.htm
             %
             % Usage:
             %    set_joint_torques(objectnames, torques)
             %
             %       objectnames (cell of strings) The joint names
-            %       torques (vector) The joint torques
+            %       forces (vector) The joint forces
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
             %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
-            %       torques = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+            %      forces = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
             %
-            %       set_joint_torques(jointnames, torques);
+            %       set_joint_forces(jointnames, torques);
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
-                torques (1,:) {mustBeNumeric}
+                forces (1,:) {mustBeNumeric}
             end
             message = "Bad call in DQ_CoppeliaSimInterfaceZMQ.set_joint_torques: " + ...
-                     "jointnames and torques have incompatible sizes";
-            obj.check_sizes_(jointnames, torques, message);   
+                     "jointnames and forces have incompatible sizes";
+            obj.check_sizes_(jointnames, forces, message);   
             n = length(jointnames);
             for i=1:n
-                obj.set_joint_torque_(jointnames{i}, torques(i));
+                obj.set_joint_target_force_(jointnames{i}, forces(i));
             end 
         end
 
-        function joint_torques = get_joint_torques(obj, jointnames)
-            % This method gets the joint torques in the CoppeliaSim scene.
+        function joint_forces = get_joint_forces(obj, jointnames)
+            % This method gets the joint forces in the CoppeliaSim scene.
             % Usage:
-            %    torques = get_joint_torques(jointnames)
+            %    forces = get_joint_forces(jointnames)
             %
             %         objectnames (cell of strings) The joint names
             %
@@ -755,15 +772,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
             %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
             %
-            %      torques = get_joint_torques(jointnames);
+            %      torques = get_joint_forces(jointnames);
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
             end        
            n = length(jointnames);
-           joint_torques = zeros(n,1);
+           joint_forces = zeros(n,1);
            for i=1:n
-               joint_torques(i) = obj.get_joint_torque_(jointnames{i});
+               joint_forces(i) = obj.get_joint_force_(jointnames{i});
            end 
         end
 
