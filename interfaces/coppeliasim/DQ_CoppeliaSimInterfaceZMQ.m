@@ -264,7 +264,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
             % The getJointForce method retrieves the force or torque applied to a joint along/about its active axis. 
             % This method uses the joint perspective, which returns an inverted signal value. 
-            % For instance, if the joint is set to have a positive target force (e.g., using setJointTargetForce), 
+            % For instance, if the joint is set to a positive target force (e.g., using setJointTargetForce), 
             % the direction of motion will follow the right-hand rule. 
             % However, when using getJointForce, which uses the joint perspective, this motion is seen as clockwise, 
             % resulting in a negative value. 
