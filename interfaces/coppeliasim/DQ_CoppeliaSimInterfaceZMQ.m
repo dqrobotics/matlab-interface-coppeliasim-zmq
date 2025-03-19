@@ -55,13 +55,20 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     methods (Access = protected)
 
         function rtn = create_handle_container_using_dictionaries_(obj, flag)
-            % This method returns an uninitialized dictionary or
-            % containers.Map according to the flag. Use true to use dictionaries 
-            % or false to use containers.Map
+            % This method returns an uninitialized dictionary by default or
+            % a containers.Map if the flag is set to false. 
             %       
             %  For more information about containers.Maps and dictionaries:
             %       https://uk.mathworks.com/help/matlab/ref/containers.map.html
             %       https://uk.mathworks.com/help/matlab/ref/dictionary.html
+            %
+            % Example:
+            %   % To return a containers.Map
+            %   obj.handles_map_ = obj.create_handle_container_using_dictionaries_(false); 
+            %
+            %   % To return a dictionary
+            %   handles_map_ = create_handle_container_using_dictionaries_();
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 flag (1,1) {mustBeNumericOrLogical} = true
@@ -80,8 +87,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method initializes the remote API client. 
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
-            %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
-            %        max_time_in_milliseconds_to_try_connection The timeout to establish the connection. 
+            %        port: The port to establish a connection (e.g. 23000, 23001, 23002, 23003...).
+            %        max_time_in_milliseconds_to_try_connection: The timeout to establish the connection. 
             %                               However, this timeout feature is not implemented yet.
             %        cntPort: This parameter is not well documented on
             %        the remote API. A typical value is -1
@@ -89,7 +96,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        the remote API. A typical value is false.
             %
             % Example:
-            %   connect_("localhost", 23000, 1000, -1, false)
+            %   rtn = connect_("localhost", 23000, 1000, -1, false)
             %
             obj.host_ = host;
             obj.rpcPort_ = rpcPort;
@@ -115,6 +122,9 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function check_client_(obj)
             % This method throws an exception if the client is not
             % initialized. 
+            %
+            % Example:
+            %   check_client_()
             if (~obj.client_created_)
                 error('Unestablished connection. Did you use connect()?');
             end
@@ -156,9 +166,9 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function newstr = remove_first_slash_from_string_(obj, str)  
             % This method removes the slash from the given string only if
             % the slash is in the first position of the string.
+            %
             % Example:
-            %    remove_first_slash_from_string_('/joint') returns 'joint'
-            %    remove_first_slash_from_string_('robot/joint') returns 'robot/joint'  
+            %    remove_first_slash_from_string_('/joint') % returns 'joint'  
             %
             if obj.start_with_slash_(str)
                  newstr = erase(str,"/");
@@ -382,8 +392,11 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 port (1,1) {mustBeNumeric} = 23000
                 timeout_in_milliseconds (1,1) {mustBeNumeric} = 5000
             end     
-            if (nargin == 3)
+            if nargin == 3 || nargin == 4
                 port = obj.get_port_from_deprecated_default_port_(port);
+            end
+            if (nargin == 4)
+                warning("The timeout feature in DQ_CoppeliaSimInterfaceZMQ.connect(host, port, timeout_in_milliseconds) is not implemented yet!")
             end
             status = obj.connect_(host, port, timeout_in_milliseconds, -1, false);
         end
