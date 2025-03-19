@@ -22,6 +22,15 @@
 %    1. Juan Jose Quiroz Omana (juanjose.quirozomana@manchester.ac.uk)
 %         - Responsible for the original implementation, which is based on
 %           https://github.com/dqrobotics/cpp-interface-coppeliasim-zmq/blob/main/src/dqrobotics/interfaces/coppeliasim/DQ_CoppeliaSimInterfaceZMQ.cpp
+%
+%
+% Instructions:
+%
+%   1. Add the ZMQ remote API folder to your Matlab path, which is typically located on:
+%      YOUR_COPPELIASIM_FOLDER/programming/zmqRemoteApi/clients/matlab
+%
+%   2. Add the DQ_CoppeliaSimInterface to your Matlab path. This file is
+%      available on https://github.com/dqrobotics/matlab-interface-coppeliasim
 
 classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
@@ -45,11 +54,21 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     
     methods (Access = protected)
 
-        function rtn = create_container_or_dictionary_(obj)
+        function rtn = create_handle_container_using_dictionaries_(obj, flag)
             % This method returns an uninitialized dictionary or
-            % containers.Map. The type of return depends on the property
-            % use_dictionaries_for_maps_, which must be set first in the
-            % constructor of the class.
+            % containers.Map according to the flag. Use true to use dictionaries 
+            % or false to use containers.Map
+            %       
+            %  For more information about containers.Maps and dictionaries:
+            %       https://uk.mathworks.com/help/matlab/ref/containers.map.html
+            %       https://uk.mathworks.com/help/matlab/ref/dictionary.html
+            arguments
+                obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
+                flag (1,1) {mustBeNumericOrLogical} = true
+            end
+
+            obj.use_dictionaries_for_maps_ = flag;
+
             if obj.use_dictionaries_for_maps_
                 rtn = dictionary;
             else
@@ -68,6 +87,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        the remote API. A typical value is -1
             %        verbose: This parameter is not well documented on
             %        the remote API. A typical value is false.
+            %
+            % Example:
+            %   connect_("localhost", 23000, 1000, -1, false)
+            %
             obj.host_ = host;
             obj.rpcPort_ = rpcPort;
             obj.cntPort_ = cntPort;
@@ -99,13 +122,14 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function set_status_bar_message_(obj, message, verbosity_type)
             % This method sets a message on the status bar of CoppeliaSim
-            % Usage:
-            %     set_status_bar_message_('DQ Robotics', obj.sim_.verbosity_warnings)
             %     
             %     message. The desired message to show on the status bar.
             %     verbosity_type. The verbosity level, as explained in the
             %                     documentation:
             %                     https://manual.coppeliarobotics.com/en/apiConstants.htm#verbosity
+            %
+            % Example:
+            %     set_status_bar_message_('DQ Robotics', obj.sim_.verbosity_warnings)
             obj.sim_.addLog(verbosity_type, message);
         end
 
@@ -317,6 +341,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % Accept both styles in the objectnames (i.e., "/name" or "name")
             obj.enable_deprecated_name_compatibility_ = true;
 
+
+  
+            % create the containers.Map (or dictionary).
+            % To force the use of a containers.Map, use:
+            % create_handle_container_using_dictionaries_(false)
+            %
+            % To force the use of a dictionaries, use: 
+            % create_handle_container_using_dictionaries_()
+
             % Note for future developers:
             %
             % Matlab recommends the use of dictionaries over container maps
@@ -326,13 +359,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %
             % Source:
             % https://uk.mathworks.com/help/matlab/ref/containers.map.html
-  
-            % This flag forces the use of a containers.Map
-            % To use dictionaries, use obj.use_dictionaries_for_maps = true
-            obj.use_dictionaries_for_maps_ = false;
-
-            % create the containers.Map (or dictionary)
-            obj.handles_map_ = obj.create_container_or_dictionary_(); 
+            obj.handles_map_ = obj.create_handle_container_using_dictionaries_(false); 
 
             disp("This version of DQ_CoppeliaSimInterfaceZMQ is compatible" + ...
                   " with CoppeliaSim " + obj.compatible_version_);
