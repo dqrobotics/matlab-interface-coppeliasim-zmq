@@ -57,17 +57,22 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function rtn = create_handle_container_using_dictionaries_(obj, flag)
             % This method returns an uninitialized dictionary by default or
             % a containers.Map if the flag is set to false. 
-            %       
-            %  For more information about containers.Maps and dictionaries:
+            %
+            % For more information about containers.Maps and dictionaries:
             %       https://uk.mathworks.com/help/matlab/ref/containers.map.html
             %       https://uk.mathworks.com/help/matlab/ref/dictionary.html
             %
-            % Example:
-            %   % To return a containers.Map
-            %   obj.handles_map_ = obj.create_handle_container_using_dictionaries_(false); 
+            % Usage: create_handle_container_using_dictionaries_(flag)
             %
-            %   % To return a dictionary
-            %   handles_map_ = create_handle_container_using_dictionaries_();
+            %     flag: Use false to return a containers.Maps. Use true
+            %           (default) to return a dictionary.
+            %       
+            % Example:
+            %     % To return a containers.Map
+            %     handles_map_ = create_handle_container_using_dictionaries_(false); 
+            %
+            %     % To return a dictionary
+            %     handles_map_ = create_handle_container_using_dictionaries_();
             %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
@@ -85,6 +90,9 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function rtn = connect_(obj, host, rpcPort, max_time_in_milliseconds_to_try_connection, cntPort, verbose)
             % This method initializes the remote API client. 
+            %
+            % Usage: connect_(host, rpcPort, max_time_in_milliseconds_to_try_connection, cntPort, verbose)
+            %
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
             %        port: The port to establish a connection (e.g. 23000, 23001, 23002, 23003...).
@@ -96,7 +104,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        the remote API. A typical value is false.
             %
             % Example:
-            %   rtn = connect_("localhost", 23000, 1000, -1, false)
+            %     rtn = connect_("localhost", 23000, 1000, -1, false)
             %
             obj.host_ = host;
             obj.rpcPort_ = rpcPort;
@@ -122,9 +130,6 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function check_client_(obj)
             % This method throws an exception if the client is not
             % initialized. 
-            %
-            % Example:
-            %   check_client_()
             if (~obj.client_created_)
                 error('Unestablished connection. Did you use connect()?');
             end
@@ -132,14 +137,17 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function set_status_bar_message_(obj, message, verbosity_type)
             % This method sets a message on the status bar of CoppeliaSim
+            %
+            % Usage: set_status_bar_message_(message, verbosity_type)
             %     
-            %     message. The desired message to show on the status bar.
-            %     verbosity_type. The verbosity level, as explained in the
+            %      message: The desired message to show on the status bar.
+            %      verbosity_type: The verbosity level, as explained in the
             %                     documentation:
             %                     https://manual.coppeliarobotics.com/en/apiConstants.htm#verbosity
             %
             % Example:
             %     set_status_bar_message_('DQ Robotics', obj.sim_.verbosity_warnings)
+            %
             obj.sim_.addLog(verbosity_type, message);
         end
 
@@ -147,8 +155,13 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method returns true if the first character of the
             % objectname string is '/'. Returns false otherwise.
             %
-            % Example: start_with_slash_('/joint') % returns true.
-            %          start_with_slash_('frame')  % returns false.
+            % Usage: start_with_slash_(objectname)
+            %
+            %      objectname: The object name
+            %
+            % Example: 
+            %     start_with_slash_('/joint') % returns true.
+            %     start_with_slash_('frame')  % returns false.
             %
             k = strfind(objectname,'/');
             n = length(k);
@@ -163,41 +176,40 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             end
         end
 
-        function newstr = remove_first_slash_from_string_(obj, str)  
-            % This method removes the slash from the given string only if
-            % the slash is in the first position of the string.
-            %
-            % Example:
-            %    remove_first_slash_from_string_('/joint') % returns 'joint'  
-            %
-            if obj.start_with_slash_(str)
-                 newstr = erase(str,"/");
-            else
-                 newstr = str;
-            end
-        end
 
-        function standard_str = get_standard_name_(obj, str)
+        function standard_str = get_standard_name_(obj, objectname)
             % This method returns a string that starts with a slash in the 
             % first position.
             %
-            % Example: get_standard_name_('/robot') % returns '/joint'
-            % Example: get_standard_name_('robot')  % returns '/joint'
+            % Usage: get_standard_name_(objectname)
+            %
+            %      objectname: The object name
+            %
+            % Example: 
+            %     get_standard_name_('/robot') % returns '/joint'
+            %     get_standard_name_('robot')  % returns '/joint'
             %
             arguments
                 obj DQ_CoppeliaSimInterfaceZMQ
-                str string
+                objectname string
             end
-              standard_str = str;
-              if (~obj.start_with_slash_(str) && obj.enable_deprecated_name_compatibility_ == true)
-                 standard_str = '/'+str;
-              end
+            standard_str = objectname;
+            if (~obj.start_with_slash_(objectname) && obj.enable_deprecated_name_compatibility_ == true)
+               standard_str = '/'+objectname;
+            end
         end
 
         function rtn = get_handle_from_map_(obj, objectname)
             % This method searchs a handle in the map. If the handle is not found, 
             % it is taken from CoppeliaSim and the map is updated
             % by using the get_object_handle() method.
+            %
+            % Usage: get_handle_from_map_(objectname)
+            %
+            %    objectname: The object name
+            %
+            % Example:
+            %     handle = get_handle_from_map_("/joint")
             %
             if (obj.use_dictionaries_for_maps_)
                 % For dictionaries    
@@ -224,6 +236,21 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function throw_runtime_error_(~, ME, msg)
             % This method throws an exception after showing a custom
             % message.
+            %
+            % Usage: throw_runtime_error_(ME, msg)
+            %
+            %     ME: MException object contains retrievable information about errors.
+            %         For more information: https://uk.mathworks.com/help/matlab/ref/mexception.html
+            %     msg: custom message to show before throwing the exception.
+            %
+            % Example:
+            %
+            %     try
+            %        surf
+            %     catch ME
+            %        throw_runtime_error_(ME, "something went wrong!")
+            %     end
+            %
             disp(msg);
             rethrow(ME); 
         end
@@ -231,7 +258,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function update_map_(obj, objectname, handle)
             % This method updates the map. The map is updated only if the objectname is not in the map.
             % In other words, it is not allowed to have an objectname twice in the map.
-
+            %
+            % Usage: update_map_(objectname, handle)
+            %
+            %    objectname: The object name.
+            %    handle: The object handle.
+            %
+            % Example:
+            %     update_map_("/joint", 10);
+            %
             if (obj.use_dictionaries_for_maps_)
                 % For dictionaries
                 obj.handles_map_ = insert(obj.handles_map_, objectname, handle);     
@@ -244,6 +279,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function rtn = get_port_from_deprecated_default_port_(~, port)
             % This method returns the default ZMQ port if the input port 
             % corresponds to a default port of the legacy API.
+            %
+            % Usage: get_port_from_deprecated_default_port_(port)
+            %   
+            %     port: The port to establish a connection.
+            %
+            % Example:
+            %     get_port_from_deprecated_default_port_(19997) % returns 23000
+            %     get_port_from_deprecated_default_port_(23000) % returns 23000
+            %
             auxport = port;
             if port == 19997 || port == 19998 || port == 19999 || port == 20000
                 auxport = 23000;
@@ -256,46 +300,103 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function check_sizes_(~, v1, v2, message)
             % This method throws an exception with the desired message if
             % the sizes of v1 and v2 are different.
+            %
+            % Usage:  check_sizes_(v1, v2, message)
+            %
+            % Example:
+            %     check_sizes([0.1 0.2 0.3], {'joint1','joint2'}, "Wrong sizes")
+            %
             if (length(v1) ~= length(v2))
                 error(message);
             end
         end
 
         function set_joint_position_(obj, jointname, angle_rad)
-           % This method sets the position of a joint in the CoppeliaSim scene.
-           obj.check_client_();
-           obj.sim_.setJointPosition(obj.get_handle_from_map_(jointname), angle_rad);
+            % This method sets the position of a joint in the CoppeliaSim scene.
+            % 
+            % Usage: set_joint_position_(jointname, angle_rad)
+            %
+            %     jointname: The joint name.
+            %     angle_rad: The joint position.
+            % 
+            % Example:
+            %     set_joint_position_("/joint", 0.5)
+            %
+            obj.check_client_();
+            obj.sim_.setJointPosition(obj.get_handle_from_map_(jointname), angle_rad);
         end
 
         function theta = get_joint_position_(obj, jointname)
-           % This method gets the position of a joint in the CoppeliaSim scene.
-           obj.check_client_();
-           theta = double(obj.sim_.getJointPosition(obj.get_handle_from_map_(jointname)));
+            % This method gets the position of a joint in the CoppeliaSim scene.
+            %
+            % Usage: get_joint_position_(jointname)
+            %
+            %     jointname: The joint name.
+            %
+            % Example:
+            %     p = get_joint_position_("/joint")
+            %
+            obj.check_client_();
+            theta = double(obj.sim_.getJointPosition(obj.get_handle_from_map_(jointname)));
         end
 
         function set_joint_target_position_(obj, jointname, angle_rad)
-           % This method sets the target position of a joint in the CoppeliaSim scene. 
-           obj.check_client_();
-           obj.sim_.setJointTargetPosition(obj.get_handle_from_map_(jointname), angle_rad);
+            % This method sets the target position of a joint in the CoppeliaSim scene. 
+            % 
+            % Usage: set_joint_target_position_(jointname, angle_rad)
+            %
+            %     jointname: The joint name.
+            %     angle_rad: The target joint position.
+            %  
+            % Example:
+            %     set_joint_target_position_("/joint", 0.5)
+            %
+            obj.check_client_();
+            obj.sim_.setJointTargetPosition(obj.get_handle_from_map_(jointname), angle_rad);
         end
 
         function theta_dot = get_joint_velocity_(obj, jointname)
             % This method gets the velocity of a joint in the CoppeliaSim scene.
+            %
+            % Usage: get_joint_velocity_(jointname)
+            %
+            %     jointname: The joint name.
+            %
+            % Example:
+            %     v = get_joint_velocity_("/joint")
+            %
             obj.check_client_();
             theta_dot = obj.sim_.getObjectFloatParam(obj.get_handle_from_map_(jointname), ...
                         obj.sim_.jointfloatparam_velocity);
         end
 
         function set_joint_target_velocity_(obj, jointname, angle_rad_dot) 
-           % This method sets the target velocity of a joint in the CoppeliaSim scene. 
-           obj.check_client_();
-           obj.sim_.setJointTargetVelocity(obj.get_handle_from_map_(jointname), angle_rad_dot);
+            % This method sets the target velocity of a joint in the CoppeliaSim scene. 
+            % 
+            % Usage: set_joint_target_velocity_(jointname, angle_rad_dot)
+            %
+            %     jointname: The joint name.
+            %     angle_rad_dot: The target joint velocity.
+            % 
+            % Example:
+            %     set_joint_target_velocity_("/joint", 0.5)
+            %
+            obj.check_client_();
+            obj.sim_.setJointTargetVelocity(obj.get_handle_from_map_(jointname), angle_rad_dot);
         end
 
         function force = get_joint_force_(obj, jointname)
             % This method gets the force of a joint in the CoppeliaSim scene.
+            %
+            % Usage: get_joint_force_(jointname)
+            %
+            %     jointname: The joint name.
+            %
+            % Example:
+            %     f = get_joint_force_("/joint")
+            %
             obj.check_client_();
-
+            
             % The getJointForce method retrieves the force or torque applied to a joint along/about its active axis. 
             % This method uses the joint perspective, which returns an inverted signal value. 
             % For instance, if the joint is set to a positive target force (e.g., using setJointTargetForce), 
@@ -312,10 +413,19 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             force = -obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
         end
 
-        function set_joint_target_force_(obj, jointname, torque) 
-           % This method sets the target force of a joint in the CoppeliaSim scene. 
-           obj.check_client_();
-           obj.sim_.setJointTargetForce(obj.get_handle_from_map_(jointname), torque, true);
+        function set_joint_target_force_(obj, jointname, force) 
+            % This method sets the target force of a joint in the CoppeliaSim scene. 
+            % 
+            % Usage: set_joint_target_force_(jointname, torque)
+            %
+            %     jointname: The joint name.
+            %     force: The target joint force.
+            % 
+            % Example:
+            %     set_joint_target_force_("/joint", 0.5)
+            %
+            obj.check_client_();
+            obj.sim_.setJointTargetForce(obj.get_handle_from_map_(jointname), force, true);
         end
 
     end
@@ -351,15 +461,6 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % Accept both styles in the objectnames (i.e., "/name" or "name")
             obj.enable_deprecated_name_compatibility_ = true;
 
-
-  
-            % create the containers.Map (or dictionary).
-            % To force the use of a containers.Map, use:
-            % create_handle_container_using_dictionaries_(false)
-            %
-            % To force the use of a dictionaries, use: 
-            % create_handle_container_using_dictionaries_()
-
             % Note for future developers:
             %
             % Matlab recommends the use of dictionaries over container maps
@@ -369,6 +470,13 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %
             % Source:
             % https://uk.mathworks.com/help/matlab/ref/containers.map.html
+
+            % create the containers.Map (or dictionary).
+            % To force the use of a containers.Map, use:
+            % create_handle_container_using_dictionaries_(false)
+            %
+            % To force the use of a dictionaries, use: 
+            % create_handle_container_using_dictionaries_()
             obj.handles_map_ = obj.create_handle_container_using_dictionaries_(false); 
 
             disp("This version of DQ_CoppeliaSimInterfaceZMQ is compatible" + ...
@@ -376,16 +484,20 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
         
         function status = connect(obj, host, port, timeout_in_milliseconds)
-            % This method connects to the remote api server (i.e.CoppeliaSim). 
+            % This method connects to the remote API server (i.e.CoppeliaSim). 
             % Returns true if the connection is established. False otherwise.
             % Calling this function is required before anything else can happen.
             %
-            % Usage: vi.connect(host, port, timeout_in_milliseconds)
+            % Usage: connect(host, port, timeout_in_milliseconds)
             %
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
             %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
-            %        timeout_in_milliseconds: The timeout to establish the connection. However, this feature is not implemented yet.    
+            %        timeout_in_milliseconds: The timeout to establish the connection. However, this feature is not implemented yet. 
+            %
+            % Example:
+            %     connect("localhost", 23000, 1000)
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 host (1,:) {mustBeText} = "localhost" % The size is (1,:) to be compatible with strings and vector of characters.
@@ -402,9 +514,16 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function set_stepping_mode(obj, flag)
-            % This method enables or disables the stepping mode (formerly known as synchronous mode). 
-            % Usage : set_stepping_mode(true)   % enables the stepping mode
-            %         set_stepping_mode(false)  % disables the stepping mode
+            % This method enables or disables the stepping mode (formerly known as synchronous mode).
+            %
+            % Usage: set_stepping_mode(flag)
+            %        
+            %        flag: Use true to enable the stepping mode. False otherwise 
+            % 
+            % Example: 
+            %     set_stepping_mode(true)   % enables the stepping mode
+            %     set_stepping_mode(false)  % disables the stepping mode
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 flag (1,1) {mustBeNumericOrLogical}
@@ -456,8 +575,16 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function handle = get_object_handle(obj, objectname)
-            % get_object_handle gets the object handle from CoppeliaSim. 
+            % This method gets the object handle from CoppeliaSim. 
             % If the handle is not included in the map, then the map is updated.
+            %
+            % Usage: handle = get_object_handle(objectname)
+            %
+            %      objectname: The object name
+            %
+            % Example:
+            %     handle = get_object_handle("/joint")
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
