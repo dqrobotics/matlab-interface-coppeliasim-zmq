@@ -53,7 +53,6 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     end
     
     methods (Access = protected)
-
         function rtn = create_handle_container_using_dictionaries_(obj, flag)
             % This method returns an uninitialized dictionary by default or
             % a containers.Map if the flag is set to false. 
@@ -62,10 +61,11 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %       https://uk.mathworks.com/help/matlab/ref/containers.map.html
             %       https://uk.mathworks.com/help/matlab/ref/dictionary.html
             %
-            % Usage: create_handle_container_using_dictionaries_(flag)
+            % Usage: rtn = create_handle_container_using_dictionaries_(flag)
             %
             %     flag: Use false to return a containers.Maps. Use true
             %           (default) to return a dictionary.
+            %     rtn: The desired  uninitialized container.
             %       
             % Example:
             %     % To return a containers.Map
@@ -91,7 +91,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function rtn = connect_(obj, host, rpcPort, max_time_in_milliseconds_to_try_connection, cntPort, verbose)
             % This method initializes the remote API client. 
             %
-            % Usage: connect_(host, rpcPort, max_time_in_milliseconds_to_try_connection, cntPort, verbose)
+            % Usage: rtn = connect_(host, rpcPort, max_time_in_milliseconds_to_try_connection, cntPort, verbose)
             %
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
@@ -99,9 +99,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %        max_time_in_milliseconds_to_try_connection: The timeout to establish the connection. 
             %                               However, this timeout feature is not implemented yet.
             %        cntPort: This parameter is not well documented on
-            %        the remote API. A typical value is -1
+            %                the remote API. A typical value is -1
             %        verbose: This parameter is not well documented on
-            %        the remote API. A typical value is false.
+            %                the remote API. A typical value is false.
+            %        rtn: The connection status.
             %
             % Example:
             %     rtn = connect_("localhost", 23000, 1000, -1, false)
@@ -155,9 +156,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method returns true if the first character of the
             % objectname string is '/'. Returns false otherwise.
             %
-            % Usage: start_with_slash_(objectname)
+            % Usage: rtn = start_with_slash_(objectname)
             %
-            %      objectname: The object name
+            %      objectname: The object name.
+            %      rtn: The flag that indicates if the first string character is a slash.
             %
             % Example: 
             %     start_with_slash_('/joint') % returns true.
@@ -181,9 +183,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method returns a string that starts with a slash in the 
             % first position.
             %
-            % Usage: get_standard_name_(objectname)
+            % Usage: standard_str = get_standard_name_(objectname)
             %
-            %      objectname: The object name
+            %      objectname: The object name.
+            %      standard_str: The standard object name.
             %
             % Example: 
             %     get_standard_name_('/robot') % returns '/joint'
@@ -204,9 +207,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % it is taken from CoppeliaSim and the map is updated
             % by using the get_object_handle() method.
             %
-            % Usage: get_handle_from_map_(objectname)
+            % Usage: rtn = get_handle_from_map_(objectname)
             %
             %    objectname: The object name
+            %    rtn: The object handle.
             %
             % Example:
             %     handle = get_handle_from_map_("/joint")
@@ -280,13 +284,14 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method returns the default ZMQ port if the input port 
             % corresponds to a default port of the legacy API.
             %
-            % Usage: get_port_from_deprecated_default_port_(port)
+            % Usage: rtn = get_port_from_deprecated_default_port_(port)
             %   
             %     port: The port to establish a connection.
+            %     rtn: The ZMQ port.
             %
             % Example:
-            %     get_port_from_deprecated_default_port_(19997) % returns 23000
-            %     get_port_from_deprecated_default_port_(23000) % returns 23000
+            %     port = get_port_from_deprecated_default_port_(19997) % returns 23000
+            %     port = get_port_from_deprecated_default_port_(23000) % returns 23000
             %
             auxport = port;
             if port == 19997 || port == 19998 || port == 19999 || port == 20000
@@ -301,7 +306,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % This method throws an exception with the desired message if
             % the sizes of v1 and v2 are different.
             %
-            % Usage:  check_sizes_(v1, v2, message)
+            % Usage: check_sizes_(v1, v2, message)
             %
             % Example:
             %     check_sizes([0.1 0.2 0.3], {'joint1','joint2'}, "Wrong sizes")
@@ -329,9 +334,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function theta = get_joint_position_(obj, jointname)
             % This method gets the position of a joint in the CoppeliaSim scene.
             %
-            % Usage: get_joint_position_(jointname)
+            % Usage: theta = get_joint_position_(jointname)
             %
             %     jointname: The joint name.
+            %     theta: The joint position.
             %
             % Example:
             %     p = get_joint_position_("/joint")
@@ -358,9 +364,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function theta_dot = get_joint_velocity_(obj, jointname)
             % This method gets the velocity of a joint in the CoppeliaSim scene.
             %
-            % Usage: get_joint_velocity_(jointname)
+            % Usage: theta_dot = get_joint_velocity_(jointname)
             %
             %     jointname: The joint name.
+            %     theta_dot: The joint velocity.
             %
             % Example:
             %     v = get_joint_velocity_("/joint")
@@ -388,9 +395,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function force = get_joint_force_(obj, jointname)
             % This method gets the force of a joint in the CoppeliaSim scene.
             %
-            % Usage: get_joint_force_(jointname)
+            % Usage: force = get_joint_force_(jointname)
             %
             %     jointname: The joint name.
+            %     force: The joint force.
             %
             % Example:
             %     f = get_joint_force_("/joint")
@@ -431,16 +439,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     end
 
     methods
-
         function obj = DQ_CoppeliaSimInterfaceZMQ()
             % Constructor of the class. 
-            % Example:
-            %
-            % cs = DQ_CoppeliaSimInterfaceZMQ();
-            % cs.connect();
-            % cs.start_simulation();
-            % x = cs.get_object_pose("/Floor")
-            % cs.stop_simulation();
             
 
             % This property is set in false at the beginning and is used to
@@ -488,12 +488,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % Returns true if the connection is established. False otherwise.
             % Calling this function is required before anything else can happen.
             %
-            % Usage: connect(host, port, timeout_in_milliseconds)
+            % Usage: status = connect(host, port, timeout_in_milliseconds)
             %
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
-            %             and the simulation are running in the same computer, you can use "localhost".
-            %        port: The port to establish a connection. (e.g. 23000, 23001, 23002, 23003...).
+            %             and the simulation are running in the same
+            %             computer, you can use "localhost" (default).
+            %        port: The port to establish a connection. (e.g. 23000,
+            %        23001, 23002, 23003...). The default port is 23000.
             %        timeout_in_milliseconds: The timeout to establish the connection. However, this feature is not implemented yet. 
+            %        status: The connection status. The default value is 5000.
             %
             % Example:
             %     connect("localhost", 23000, 1000)
@@ -563,6 +566,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         function handles = get_object_handles(obj, objectnames)
             % This method returns a cell that contains the handles
             % corresponding to the objectnames.
+            %
+            % Usage: handles = get_object_handles(objectnames)
+            %
+            %    objectnames: The object names.
+            %    handles: The object handles.
+            %
+            % Example:
+            %     handles = get_object_handles({'/joint1', '/joint2'})
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectnames (1,:) {mustBeText} 
@@ -581,6 +593,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % Usage: handle = get_object_handle(objectname)
             %
             %      objectname: The object name
+            %      handle: The object handle.
             %
             % Example:
             %     handle = get_object_handle("/joint")
@@ -604,9 +617,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 standard_objectname = obj.get_standard_name_(objectname);
                 handle = obj.sim_.getObject(standard_objectname);
                 obj.update_map_(standard_objectname, handle);
-
-            catch ME
-                
+            catch ME          
                 msg = "The object "  + char(34) + objectname  + char(34) + " does not exist in the " + ...
                       "current scene in CoppeliaSim. " + additional_error_message;
                 obj.throw_runtime_error_(ME, msg)
@@ -614,20 +625,19 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         end
 
-        function t = get_object_translation(obj, objectname)
+        function translation = get_object_translation(obj, objectname)
             % This method returns a pure quaternion that represents the translation of an object 
             % in the CoppeliaSim scene.
             %
-            % Usage:
-            %    t = get_object_translation(objectname)
+            % Usage: translation = get_object_translation(objectname)
             %
-            %       objectname The object name
-            %       t A pure quaternion that represents the translation of
-            %       the desired object in the CoppeliaSim scene.
+            %       objectname: The object name
+            %       translation: The pure quaternion that represents the translation of
+            %                    the desired object in the CoppeliaSim scene.
             %
             % Example:
-            %
-            %      t = get_object_translation('DefaultCamera');
+            %     translation = get_object_translation('DefaultCamera');
+            %      
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
@@ -635,20 +645,21 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             obj.check_client_();
             position = obj.sim_.getObjectPosition(obj.get_handle_from_map_(objectname), ...
             obj.sim_.handle_world);
-            t = DQ(double([position{1},position{2},position{3}]));
+            translation = DQ(double([position{1},position{2},position{3}]));
         end
 
         function set_object_translation(obj, objectname, translation)
             % This method sets the translation of an object in the CoppeliaSim scene.
             %
-            % Usage:
-            %    set_object_translation(objectname)
+            % Usage: set_object_translation(objectname, translation)
             %
-            %       objectname (string) The object name
-            %       translation (pure quaternion) The desired translation
+            %       objectname: The object name
+            %       translation: The desired translation represented by a
+            %                    pure quaternion.
+            %
             % Example:
-            %
-            %      set_object_translation('DefaultCamera', t);  
+            %     set_object_translation('DefaultCamera', 0.5*DQ.i);
+            %        
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters. 
@@ -661,41 +672,41 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                                        position,obj.sim_.handle_world);
         end
 
-        function r = get_object_rotation(obj, objectname)
+        function rotation = get_object_rotation(obj, objectname)
             % This method returns a unit quaternion that represents the rotation of an object 
             % in the CoppeliaSim scene.
             %
-            % Usage:
-            %    r = get_object_rotation(objectname)
+            % Usage: rotation = get_object_rotation(objectname)
             %
-            %       objectname The object name
-            %       r A unit quaternion that represents the rotation of
-            %       the desired object in the CoppeliaSim scene.
+            %       objectname: The object name.
+            %       rotation: The unit quaternion that represents the rotation of
+            %                 the desired object in the CoppeliaSim scene.
             %
             % Example:
-            %
-            %      r = get_object_rotation('DefaultCamera');
+            %     rotation = get_object_rotation('DefaultCamera');
+            %      
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
             end
-           obj.check_client_();
-           rotation = obj.sim_.getObjectQuaternion(obj.get_handle_from_map_(objectname) ...
+            obj.check_client_();
+            r = obj.sim_.getObjectQuaternion(obj.get_handle_from_map_(objectname) ...
                         + obj.sim_.handleflag_wxyzquat, obj.sim_.handle_world);
-           r = normalize(DQ(double([rotation{1},rotation{2},rotation{3}, rotation{4}])));
+            rotation = normalize(DQ(double([r{1},r{2},r{3}, r{4}])));
         end
 
         function set_object_rotation(obj, objectname, rotation)
             % This method sets the rotation of an object in the CoppeliaSim scene.
             %
-            % Usage:
-            %    set_object_rotation(objectname)
+            % Usage: set_object_rotation(objectname, rotation)
             %
-            %       objectname (string) The object name
-            %       rotation (unit quaternion) The desired rotation
+            %       objectname: The object name.
+            %       rotation: The desired rotation represented by a unit
+            %                 quaternion.
+            %
             % Example:
-            %
-            %      set_object_translation('DefaultCamera', r);  
+            %     set_object_rotation('DefaultCamera', cos(pi/4) + DQ.k*sin(pi/4));
+            %        
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
@@ -708,40 +719,40 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                         + obj.sim_.handleflag_wxyzquat, rotation, obj.sim_.handle_world);
         end
 
-        function x = get_object_pose(obj, objectname)
+        function pose = get_object_pose(obj, objectname)
             % This method returns a unit dual quaternion that represents the pose of an object 
             % in the CoppeliaSim scene.
             %
             % Usage:
-            %    x = get_object_pose(objectname)
+            %    pose = get_object_pose(objectname)
             %
-            %       objectname The object name
-            %       x A unit dual quaternion that represents the pose of
-            %       the desired object in the CoppeliaSim scene.
+            %       objectname: The object name.
+            %       pose: The unit dual quaternion that represents the pose of
+            %             the desired object in the CoppeliaSim scene.
             %
             % Example:
-            %
-            %      x = get_object_pose('DefaultCamera');
+            %     pose = get_object_pose('DefaultCamera');
+            %      
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
             end
-           t = obj.get_object_translation(objectname);
-           r = obj.get_object_rotation(objectname);
-           x = r + 0.5*DQ.E*t*r;
+            t = obj.get_object_translation(objectname);
+            r = obj.get_object_rotation(objectname);
+            pose = r + 0.5*DQ.E*t*r;
         end
 
         function set_object_pose(obj, objectname, pose)
             % This method sets the pose of an object in the CoppeliaSim scene.
             %
-            % Usage:
-            %    set_object_pose(objectname, pose)
+            % Usage: set_object_pose(objectname, pose)
             %
-            %       objectname (string) The object name
-            %       pose (unit dual quaternion) The desired pose
+            %       objectname: The object name.
+            %       pose: The desired pose represented by a unit dual
+            %             quaternion.
             % Example:
-            %
-            %      set_object_pose('DefaultCamera', pose);  
+            %     set_object_pose('DefaultCamera', DQ(1));  
+            %      
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 objectname (1,:) {mustBeText} % The size is (1,:) to be compatible with strings and vector of characters.
@@ -759,14 +770,13 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
         end
 
         function set_joint_positions(obj, jointnames, joint_positions)
-            % This method sets the joint positions in the CoppeliaSimscene.
+            % This method sets the joint positions in the CoppeliaSim scene.
             % It is required a dynamics disabled scene. 
             %
-            % Usage:
-            %    set_joint_positions(objectnames, joint_positions)
+            % Usage: set_joint_positions(objectnames, joint_positions)
             %
-            %       objectnames (cell of strings) The joint names
-            %       joint_positions (vector) The joint positions
+            %       objectnames: The joint names.
+            %       joint_positions: The desired joint positions.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
@@ -774,6 +784,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %       u = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
             %
             %       set_joint_positions(jointnames, u);
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
@@ -790,16 +801,18 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function joint_positions = get_joint_positions(obj, jointnames)
             % This method gets the joint positions in the CoppeliaSim scene.
-            % Usage:
-            %    joint_positions = get_joint_positions(jointnames)
             %
-            %         objectnames (cell of strings) The joint names
+            % Usage: joint_positions = get_joint_positions(jointnames)
+            %
+            %         objectnames: The joint names.
+            %         joint_positions: The joint positions.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
             %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
             %
             %      joint_positions = get_joint_positions(jointnames);
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
@@ -817,11 +830,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % For more information about joint modes:
             % https://www.coppeliarobotics.com/helpFiles/en/jointModes.htm
             %
-            % Usage:
-            %    set_joint_positions(objectnames, joint_positions)
+            % Usage: set_joint_positions(objectnames, joint_positions)
             %
-            %       objectnames (cell of strings) The joint names
-            %       joint_target_positions (vector) The joint target positions
+            %       objectnames: The joint names.
+            %       joint_target_positions: The joint target positions.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
@@ -829,6 +841,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %       u = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
             %
             %       set_joint_target_positions(jointnames, u);
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
@@ -844,25 +857,27 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function joint_velocities = get_joint_velocities(obj, jointnames)
             % This method gets the joint velocities in the CoppeliaSim scene.
-            % Usage:
-            %    joint_velocities = get_joint_velocities(jointnames)
             %
-            %         objectnames (cell of strings) The joint names
+            % Usage: joint_velocities = get_joint_velocities(jointnames)
+            %
+            %         objectnames: The joint names.
+            %         joint_velocities: The joint velocities.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
             %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
             %
             %      joint_velocities = get_joint_velocities(jointnames);
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
             end
-           n = length(jointnames);
-           joint_velocities = zeros(n,1);
-           for i=1:n
-               joint_velocities(i) = obj.get_joint_velocity_(jointnames{i});
-           end
+            n = length(jointnames);
+            joint_velocities = zeros(n,1);
+            for i=1:n
+                joint_velocities(i) = obj.get_joint_velocity_(jointnames{i});
+            end
         end
 
         function set_joint_target_velocities(obj, jointnames, joint_target_velocities)
@@ -871,11 +886,10 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % For more information about joint modes:
             % https://www.coppeliarobotics.com/helpFiles/en/jointModes.htm
             %
-            % Usage:
-            %    set_joint_target_velocities(objectnames, joint_target_velocities)
+            % Usage: set_joint_target_velocities(objectnames, joint_target_velocities)
             %
-            %       objectnames (cell of strings) The joint names
-            %       joint_target_velocities (vector) The joint target velocities
+            %       objectnames: The joint names.
+            %       joint_target_velocities: The joint target velocities.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
@@ -883,6 +897,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %       joint_target_velocities = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
             %
             %       set_joint_target_velocities(jointnames, joint_target_velocities);
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
@@ -902,18 +917,18 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             % For more information about joint modes:
             % https://www.coppeliarobotics.com/helpFiles/en/jointModes.htm
             %
-            % Usage:
-            %    set_joint_torques(objectnames, torques)
+            % Usage: set_joint_torques(objectnames, forces)
             %
-            %       objectnames (cell of strings) The joint names
-            %       forces (vector) The joint forces
+            %       objectnames: The joint names.
+            %       forces: The target joint forces.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
             %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
             %      forces = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
             %
-            %       set_joint_forces(jointnames, torques);
+            %      set_joint_target_forces(jointnames, forces);
+            %
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
@@ -930,16 +945,16 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
 
         function joint_forces = get_joint_forces(obj, jointnames)
             % This method gets the joint forces in the CoppeliaSim scene.
-            % Usage:
-            %    forces = get_joint_forces(jointnames)
             %
-            %         objectnames (cell of strings) The joint names
+            % Usage: forces = get_joint_forces(jointnames)
+            %
+            %         objectnames: The joint names.
             %
             % Example:
             %      jointnames={'LBR4p_joint1','LBR4p_joint2','LBR4p_joint3','LBR4p_joint4',...
             %                  'LBR4p_joint5','LBR4p_joint6','LBR4p_joint7'};
             %
-            %      torques = get_joint_forces(jointnames);
+            %      forces = get_joint_forces(jointnames);
             arguments
                 obj  (1,1) DQ_CoppeliaSimInterfaceZMQ
                 jointnames (1,:) {mustBeText} 
