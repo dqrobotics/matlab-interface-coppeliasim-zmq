@@ -511,7 +511,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
                 port = obj.get_port_from_deprecated_default_port_(port);
             end
             if (nargin == 4)
-                warning("The timeout feature in DQ_CoppeliaSimInterfaceZMQ.connect(host, port, timeout_in_milliseconds) is not implemented yet!")
+                warning("Timeout has not been implemented yet and will be added in future releases. " + ...
+                    "See discussion in https://github.com/dqrobotics/matlab-interface-coppeliasim-zmq/pull/1")
             end
             status = obj.connect_(host, port, timeout_in_milliseconds, -1, false);
         end
