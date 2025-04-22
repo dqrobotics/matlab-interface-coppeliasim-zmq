@@ -4,6 +4,13 @@
 
 A DQ Robotics interface based on the ZeroMQ remote API to connect with CoppeliaSim. 
 
+### Instructions for developers
+
+1. Install the [DQ Robotics library](https://github.com/dqrobotics/matlab).
+2. Add to the path the [DQ_CoppeliaSimInterface class](https://github.com/dqrobotics/matlab-interface-coppeliasim).
+3. Add to the path the [ZMQ client for Matlab](https://github.com/CoppeliaRobotics/zmqRemoteApi/tree/coppeliasim-v4.7.0-rev2/clients/matlab).
+4. Open CoppeliaSim before running any example.
+
 ### How to use
 
 ```Matlab
