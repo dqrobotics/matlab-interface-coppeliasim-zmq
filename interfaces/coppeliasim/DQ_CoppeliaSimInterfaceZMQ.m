@@ -95,7 +95,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %
             %        host: The IP address of the computer that hosts the CoppeliaSim simulation. If the client (your code)
             %             and the simulation are running in the same computer, you can use "localhost".
-            %        port: The port to establish a connection (e.g. 23000, 23001, 23002, 23003...).
+            %        rpcPort: The port to establish a connection (e.g. 23000, 23001, 23002, 23003...).
             %        max_time_in_milliseconds_to_try_connection: The timeout to establish the connection. 
             %                               However, this timeout feature is not implemented yet.
             %        cntPort: This parameter is not well documented on
@@ -189,8 +189,8 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %      standard_str: The standard object name.
             %
             % Example: 
-            %     get_standard_name_('/robot') % returns '/joint'
-            %     get_standard_name_('robot')  % returns '/joint'
+            %     get_standard_name_('/robot') % returns '/robot'
+            %     get_standard_name_('robot')  % returns '/robot'
             %
             arguments
                 obj DQ_CoppeliaSimInterfaceZMQ
@@ -417,7 +417,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %  https://forum.coppeliarobotics.com/viewtopic.php?p=41694&hilit=getJointForce#p41694
             % 
             % Therefore, to return a joint force using the same reference that 
-            % setJointTargetForce uses, we multiply by -1.
+            % setJointTargetForce uses, we multiply it by -1.
             force = -obj.sim_.getJointForce(obj.get_handle_from_map_(jointname));
         end
 
