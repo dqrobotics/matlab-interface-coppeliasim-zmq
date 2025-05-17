@@ -999,15 +999,15 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             %
             % Example:
             %      objectnames = get_object_names(handles)
-           arguments 
-                obj (1,1) DQ_CoppeliaSimInterfaceZMQ
-                handles cell
-           end
-           n = length(handles);
-           objectnames = cell(1,n);
-           for i=1:n
-               objectnames{i}=obj.get_object_name(handles{i});
-           end
+            arguments 
+                 obj (1,1) DQ_CoppeliaSimInterfaceZMQ
+                 handles cell
+            end
+            n = length(handles);
+            objectnames = cell(1,n);
+            for i=1:n
+                objectnames{i}=obj.get_object_name(handles{i});
+            end
         end
 
         function jointnames =  get_jointnames_from_object(obj, objectname)
