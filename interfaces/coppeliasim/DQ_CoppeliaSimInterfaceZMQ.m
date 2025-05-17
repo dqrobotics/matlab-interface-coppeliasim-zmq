@@ -436,6 +436,45 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
             obj.sim_.setJointTargetForce(obj.get_handle_from_map_(jointname), force, true);
         end
 
+        function objectname = get_object_name_(obj, handle)
+            % This method gets the name of an object in the CoppeliaSim scene.
+            %
+            % Usage: objectname = get_object_name_(handle)
+            %
+            %         handle: The object handle.
+            %
+            % Example:
+            %      objectname = get_object_name_(handle)
+           arguments 
+                obj (1,1) DQ_CoppeliaSimInterfaceZMQ
+                handle (1,1) {mustBeNumeric}
+           end
+           obj.check_client_();
+           objectname = obj.sim_.getObjectAlias(handle, 1);
+           obj.update_map_(objectname, handle);
+        end
+
+        function objectnames = get_object_names_(obj, handles)
+            % This method gets the object names in the CoppeliaSim scene.
+            %
+            % Usage: objectnames = get_object_names_(handles)
+            %
+            %         handles: The object handles.
+            %
+            % Example:
+            %      objectnames = get_object_names_(handles)
+            arguments 
+                 obj (1,1) DQ_CoppeliaSimInterfaceZMQ
+                 handles cell
+            end
+            n = length(handles);
+            objectnames = cell(1,n);
+            for i=1:n
+                objectnames{i}=obj.get_object_name_(handles{i});
+            end
+        end
+
+
     end
 
     methods
@@ -972,44 +1011,6 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
     % Exclusive ZMQ methods, which are not enforced by the
     % DQ_CoppeliaSimInterface class
     methods 
-        function objectname = get_object_name(obj, handle)
-            % This method gets the name of an object in the CoppeliaSim scene.
-            %
-            % Usage: objectname = get_object_name(handle)
-            %
-            %         handle: The object handle.
-            %
-            % Example:
-            %      objectname = get_object_name(handle)
-           arguments 
-                obj (1,1) DQ_CoppeliaSimInterfaceZMQ
-                handle (1,1) {mustBeNumeric}
-           end
-           obj.check_client_();
-           objectname = obj.sim_.getObjectAlias(handle, 1);
-           obj.update_map_(objectname, handle);
-        end
-
-        function objectnames = get_object_names(obj, handles)
-            % This method gets the object names in the CoppeliaSim scene.
-            %
-            % Usage: objectnames = get_object_name(handles)
-            %
-            %         handles: The object handles.
-            %
-            % Example:
-            %      objectnames = get_object_names(handles)
-            arguments 
-                 obj (1,1) DQ_CoppeliaSimInterfaceZMQ
-                 handles cell
-            end
-            n = length(handles);
-            objectnames = cell(1,n);
-            for i=1:n
-                objectnames{i}=obj.get_object_name(handles{i});
-            end
-        end
-
         function jointnames =  get_jointnames_from_object(obj, objectname)
             % This method gets all the names of the joints under the hierarchy tree, 
             % in which the object name describes its base.
@@ -1028,7 +1029,7 @@ classdef DQ_CoppeliaSimInterfaceZMQ < DQ_CoppeliaSimInterface
            base_handle = obj.get_handle_from_map_(objectname);
            jointhandles = obj.sim_.getObjectsInTree(base_handle,...
                                                 obj.sim_.object_joint_type,0);
-           jointnames = obj.get_object_names(jointhandles);
+           jointnames = obj.get_object_names_(jointhandles);
         end
     end
 
