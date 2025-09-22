@@ -44,7 +44,7 @@
 %    the second one "/LBR4p[1]". A third robot will be named "/LBR4p[2]",
 %    and so on.
 
-classdef LBR4pCoppeliaSimRobotZMQ < DQ_SerialCoppeliaSimRobotZMQ
+classdef LBR4pCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobotZMQ
     methods
         function obj = LBR4pCoppeliaSimRobotZMQ(robot_name, coppeliasim_interface)
             % This method constructs an instance of a KUKA LBR4+ robot.
@@ -72,7 +72,7 @@ classdef LBR4pCoppeliaSimRobotZMQ < DQ_SerialCoppeliaSimRobotZMQ
                 coppeliasim_interface (1,1) DQ_CoppeliaSimInterfaceZMQ
             end
 
-            obj@DQ_SerialCoppeliaSimRobotZMQ(robot_name, ...
+            obj@DQ_CoppeliaSimRobotZMQ(robot_name, ...
                 coppeliasim_interface);
         end
 

@@ -44,7 +44,7 @@
 %    name the second one "/youBot[1]". A third robot will be named
 %    "/youBot[2]", and so on.
 
-classdef YouBotCoppeliaSimRobotZMQ < DQ_SerialCoppeliaSimRobotZMQ
+classdef YouBotCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobotZMQ
     properties (Constant)
         adjust_ = ((cos(pi/2) + DQ.i*sin(pi/2))*(cos(pi/4) + ...
                         DQ.j*sin(pi/4)))*(1 + 0.5*DQ.E* - 0.1*DQ.k);
@@ -77,7 +77,7 @@ classdef YouBotCoppeliaSimRobotZMQ < DQ_SerialCoppeliaSimRobotZMQ
                 coppeliasim_interface (1,1) DQ_CoppeliaSimInterfaceZMQ
             end
 
-            obj@DQ_SerialCoppeliaSimRobotZMQ(robot_name, ...
+            obj@DQ_CoppeliaSimRobotZMQ(robot_name, ...
                                           coppeliasim_interface);
 
             % Fix the base name because youBot is a mobile manipulator

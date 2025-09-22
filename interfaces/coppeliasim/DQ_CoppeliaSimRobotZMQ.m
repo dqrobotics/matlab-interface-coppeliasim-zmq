@@ -22,18 +22,18 @@
 %    1. Frederico Fernandes Afonso Silva (frederico.silva@ieee.org)
 %         - Responsible for the original implementation
 
-classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
+classdef DQ_CoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
     properties (SetAccess = protected)
         base_frame_name_;
         joint_names_;
     end
 
     methods
-        function obj = DQ_SerialCoppeliaSimRobotZMQ(robot_name, coppeliasim_interface)
+        function obj = DQ_CoppeliaSimRobotZMQ(robot_name, coppeliasim_interface)
             % This method constructs an instance of a
-            % DQ_SerialCoppeliaSimRobotZMQ object.
+            % DQ_CoppeliaSimRobotZMQ object.
             % Usage:
-            %     DQ_SerialCoppeliaSimRobotZMQ(robot_name, coppeliasim_interface)
+            %     DQ_CoppeliaSimRobotZMQ(robot_name, coppeliasim_interface)
             %          robot_name: The name of the robot in the CoppeliaSim
             %          scene.
             %          coppeliasim_interface: The DQ_CoppeliaSimInterfaceZMQ
@@ -42,7 +42,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %      cs = DQ_CoppeliaSimInterfaceZMQ();
             %      cs.connect;
-            %      robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %      robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     
             %    Note that the name of the robot should be EXACTLY the same
             %    as in CoppeliaSim. For instance, if you drag-and-drop a
@@ -77,7 +77,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     q = zeros(7, 1);
             %     robot_coppeliasim.set_configuration(q);
             %     
@@ -86,7 +86,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             %     dynamics disabled scene.
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
                 q (1,:) {mustBeNumeric}
             end
 
@@ -105,7 +105,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     q = zeros(7, 1);
             %     robot_coppeliasim.set_target_configuration(q);
             %     
@@ -115,7 +115,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             %     mode with position control mode.
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
                 q (1,:) {mustBeNumeric}
             end
 
@@ -132,11 +132,11 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     q = robot_coppeliasim.get_configuration;
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
             end
 
             q = obj.coppeliasim_interface_.get_joint_positions( ...
@@ -154,7 +154,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     dq = zeros(7, 1);
             %     robot_coppeliasim.set_target_configuration_velocities(dq);
             %     
@@ -164,7 +164,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             %     mode with velocity control mode.
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
                 dq (1,:) {mustBeNumeric}
             end
 
@@ -181,11 +181,11 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     dq = robot_coppeliasim.get_configuration_velocities;
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
             end
 
             dq = obj.coppeliasim_interface_.get_joint_velocities( ...
@@ -203,7 +203,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     tau = zeros(7, 1);
             %     robot_coppeliasim.set_target_configuration_forces(tau);
             %     
@@ -213,7 +213,7 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             %     mode with force control mode.
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
                 tau (1,:) {mustBeNumeric}
             end
 
@@ -230,11 +230,11 @@ classdef DQ_SerialCoppeliaSimRobotZMQ < DQ_CoppeliaSimRobot
             % Example: 
             %     cs = DQ_CoppeliaSimInterfaceZMQ();
             %     cs.connect;
-            %     robot_coppeliasim = DQ_SerialCoppeliaSimRobotZMQ("/LBR4p", cs);
+            %     robot_coppeliasim = DQ_CoppeliaSimRobotZMQ("/LBR4p", cs);
             %     tau = robot_coppeliasim.get_configuration_forces;
 
             arguments 
-                obj (1,1) DQ_SerialCoppeliaSimRobotZMQ
+                obj (1,1) DQ_CoppeliaSimRobotZMQ
             end
 
             tau = obj.coppeliasim_interface_.get_joint_forces( ...
